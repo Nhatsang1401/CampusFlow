@@ -1,0 +1,27 @@
+
+# Framework chính
+Django>=5.2,<5.3
+
+# REST API
+djangorestframework>=3.16,<3.17
+
+# PostgreSQL
+psycopg[binary]>=3.2,<4
+
+# Environment configuration
+python-dotenv>=1.0,<2
+
+# Production static files
+whitenoise>=6.8,<7
+
+# Image processing
+Pillow>=11,<13
+
+# QR Code
+qrcode[pil]>=8,<9
+
+# Excel
+openpyxl>=3.1,<4
+
+# PDF
+reportlab>=4.2,<5
