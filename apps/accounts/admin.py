@@ -8,18 +8,19 @@ from .models import User
 class UserAdmin(BaseUserAdmin):
     list_display = (
         "username",
+        "get_display_name",
         "email",
-        "first_name",
-        "last_name",
-        "is_staff",
+        "phone_number",
+        "display_role",
         "is_active",
+        "is_staff",
     )
 
     list_filter = (
+        "role",
+        "is_active",
         "is_staff",
         "is_superuser",
-        "is_active",
-        "groups",
     )
 
     search_fields = (
@@ -27,6 +28,7 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "first_name",
         "last_name",
+        "phone_number",
     )
 
     ordering = ("username",)
@@ -35,3 +37,52 @@ class UserAdmin(BaseUserAdmin):
         "last_login",
         "date_joined",
     )
+
+    fieldsets = (
+        (
+            "Thông tin đăng nhập",
+            {
+                "fields": (
+                    "username",
+                    "password",
+                )
+            },
+        ),
+        (
+            "Thông tin cá nhân",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                )
+            },
+        ),
+        (
+            "Phân quyền",
+            {
+                "fields": (
+                    "role",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+        (
+            "Thông tin hệ thống",
+            {
+                "fields": (
+                    "last_login",
+                    "date_joined",
+                )
+            },
+        ),
+    )
+
+    @admin.display(description="Họ và tên")
+    def get_display_name(self, obj):
+        return obj.get_full_name() or obj.username

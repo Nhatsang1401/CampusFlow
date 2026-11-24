@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from django.views.generic import RedirectView
 
 from apps.core.views import health_check
 
@@ -17,5 +18,17 @@ urlpatterns = [
         "health/",
         health_check,
         name="health_check",
+    ),
+    path(
+        "tai-khoan/",
+        include("apps.accounts.urls"),
+    ),
+    path(
+        "",
+        RedirectView.as_view(
+            pattern_name="accounts:login",
+            permanent=False,
+        ),
+        name="home",
     ),
 ]

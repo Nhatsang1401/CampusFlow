@@ -1,4 +1,4 @@
-"""Base settings shared by all environments."""
+"""Base settings shared by all CampusFlow environments."""
 
 import os
 from pathlib import Path
@@ -25,7 +25,10 @@ def env_bool(name: str, default: bool = False) -> bool:
     }
 
 
-def env_list(name: str, default: list[str] | None = None) -> list[str]:
+def env_list(
+    name: str,
+    default: list[str] | None = None,
+) -> list[str]:
     """Read a comma-separated environment variable."""
     value = os.getenv(name)
 
@@ -127,7 +130,14 @@ TEMPLATES = [
 # DATABASE
 # ==========================================================
 
-DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").strip().lower()
+DB_ENGINE = (
+    os.getenv(
+        "DB_ENGINE",
+        "sqlite",
+    )
+    .strip()
+    .lower()
+)
 
 if DB_ENGINE == "sqlite":
     DATABASES = {
@@ -166,6 +176,16 @@ else:
 # ==========================================================
 
 AUTH_USER_MODEL = "accounts.User"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+LOGIN_URL = "accounts:login"
+
+LOGIN_REDIRECT_URL = "accounts:profile"
+
+LOGOUT_REDIRECT_URL = "accounts:login"
 
 
 # ==========================================================
@@ -254,7 +274,7 @@ REST_FRAMEWORK = {
 
 
 # ==========================================================
-# SECURITY DEFAULTS
+# SECURITY
 # ==========================================================
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
@@ -295,7 +315,10 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_LEVEL = os.getenv(
+    "LOG_LEVEL",
+    "INFO",
+).upper()
 
 LOGGING = {
     "version": 1,

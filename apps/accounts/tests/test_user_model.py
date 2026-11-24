@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from apps.accounts.models import UserRole
+
 User = get_user_model()
 
 
@@ -10,8 +12,8 @@ class UserModelTests(TestCase):
             username="sinhvien01",
             email="sinhvien01@example.com",
             password="CampusFlow@2026",
-            first_name="Nguyen",
-            last_name="Van A",
+            first_name="Van A",
+            last_name="Nguyen",
         )
 
         self.assertEqual(
@@ -39,3 +41,58 @@ class UserModelTests(TestCase):
         )
 
         self.assertTrue(user.check_password(raw_password))
+
+    def test_default_role_is_student(self):
+        user = User.objects.create_user(
+            username="sinhvien03",
+            password="CampusFlow@2026",
+        )
+
+        self.assertEqual(
+            user.role,
+            UserRole.STUDENT,
+        )
+
+        self.assertEqual(
+            user.display_role,
+            "Sinh viên",
+        )
+
+    def test_lecturer_role(self):
+        user = User.objects.create_user(
+            username="giangvien01",
+            password="CampusFlow@2026",
+            role=UserRole.LECTURER,
+        )
+
+        self.assertEqual(
+            user.display_role,
+            "Giảng viên",
+        )
+
+    def test_superuser_is_administrator(self):
+        user = User.objects.create_superuser(
+            username="quantri01",
+            email="admin@example.com",
+            password="CampusFlow@2026",
+        )
+
+        self.assertTrue(user.is_administrator)
+
+        self.assertEqual(
+            user.display_role,
+            "Quản trị viên",
+        )
+
+    def test_string_representation(self):
+        user = User.objects.create_user(
+            username="sinhvien04",
+            password="CampusFlow@2026",
+            first_name="An",
+            last_name="Nguyen Van",
+        )
+
+        self.assertEqual(
+            str(user),
+            "Nguyen Van An",
+        )
