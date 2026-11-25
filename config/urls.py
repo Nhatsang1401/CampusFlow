@@ -31,4 +31,8 @@ urlpatterns = [
         ),
         name="home",
     ),
+    path(
+        "api/attendance/",
+        include("apps.attendance.urls"),
+    ),
 ]
