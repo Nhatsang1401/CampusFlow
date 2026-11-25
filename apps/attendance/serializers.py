@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AttendanceSession
+from .models import AttendanceRecord, AttendanceSession
 
 
 class AttendanceSessionCreateSerializer(serializers.Serializer):
@@ -27,6 +27,51 @@ class AttendanceSessionSerializer(serializers.ModelSerializer):
             "status",
             "display_status",
             "is_active",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class StudentCheckInSerializer(serializers.Serializer):
+    token = serializers.CharField(
+        max_length=256,
+        trim_whitespace=True,
+        write_only=True,
+    )
+
+
+class AttendanceRecordSerializer(serializers.ModelSerializer):
+    student_code = serializers.CharField(
+        source="student.student_code",
+        read_only=True,
+    )
+    course_code = serializers.CharField(
+        source="attendance_session.class_session.timetable.course_section.course.code",
+        read_only=True,
+    )
+    course_name = serializers.CharField(
+        source="attendance_session.class_session.timetable.course_section.course.name",
+        read_only=True,
+    )
+    section_code = serializers.CharField(
+        source="attendance_session.class_session.timetable.course_section.code",
+        read_only=True,
+    )
+    session_date = serializers.DateField(
+        source="attendance_session.class_session.session_date",
+        read_only=True,
+    )
+
+    class Meta:
+        model = AttendanceRecord
+        fields = [
+            "id",
+            "student_code",
+            "course_code",
+            "course_name",
+            "section_code",
+            "session_date",
+            "checked_in_at",
             "created_at",
         ]
         read_only_fields = fields

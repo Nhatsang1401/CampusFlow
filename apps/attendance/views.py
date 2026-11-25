@@ -7,13 +7,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AttendanceSession
-from .permissions import IsLecturerOrAdmin
+from apps.academics.models import StudentProfile
+
+from .models import AttendanceRecord, AttendanceSession
+from .permissions import IsLecturerOrAdmin, IsStudent
 from .serializers import (
+    AttendanceRecordSerializer,
     AttendanceSessionCreateSerializer,
     AttendanceSessionSerializer,
+    StudentCheckInSerializer,
 )
 from .services import (
+    check_in_student,
     close_attendance_session,
     create_attendance_session,
     generate_qr_base64,
@@ -102,3 +107,57 @@ class AttendanceSessionCloseView(APIView):
             raise ValidationError(exc.messages) from exc
 
         return Response(AttendanceSessionSerializer(session).data)
+
+
+class StudentCheckInView(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def post(self, request):
+        serializer = StudentCheckInSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            record = check_in_student(
+                token=serializer.validated_data["token"],
+                user=request.user,
+            )
+        except DjangoValidationError as exc:
+            raise ValidationError(exc.messages) from exc
+
+        record = AttendanceRecord.objects.select_related(
+            "student",
+            "attendance_session__class_session__timetable__course_section__course",
+        ).get(pk=record.pk)
+
+        return Response(
+            {
+                "message": "Điểm danh thành công.",
+                "record": AttendanceRecordSerializer(record).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MyAttendanceRecordsView(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def get(self, request):
+        try:
+            student = request.user.student_profile
+        except StudentProfile.DoesNotExist as exc:
+            raise ValidationError("Tài khoản chưa được liên kết với hồ sơ sinh viên.") from exc
+
+        queryset = (
+            AttendanceRecord.objects.filter(student=student)
+            .select_related(
+                "student",
+                "attendance_session__class_session__timetable__course_section__course",
+            )
+            .order_by("-checked_in_at")
+        )
+
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(queryset, request, view=self)
+
+        serializer = AttendanceRecordSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)

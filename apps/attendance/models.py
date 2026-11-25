@@ -110,3 +110,48 @@ class AttendanceSession(models.Model):
 
     def __str__(self):
         return f"Điểm danh - {self.class_session}"
+
+
+class AttendanceRecord(models.Model):
+    attendance_session = models.ForeignKey(
+        AttendanceSession,
+        on_delete=models.PROTECT,
+        related_name="attendance_records",
+        verbose_name="Phiên điểm danh",
+    )
+    student = models.ForeignKey(
+        "academics.StudentProfile",
+        on_delete=models.PROTECT,
+        related_name="attendance_records",
+        verbose_name="Sinh viên",
+    )
+    checked_in_at = models.DateTimeField(
+        default=timezone.now,
+        db_index=True,
+        verbose_name="Thời điểm điểm danh",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Ngày tạo",
+    )
+
+    class Meta:
+        db_table = "attendance_record"
+        verbose_name = "Bản ghi điểm danh"
+        verbose_name_plural = "Danh sách bản ghi điểm danh"
+        ordering = ["-checked_in_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["attendance_session", "student"],
+                name="att_record_session_student_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["student", "checked_in_at"],
+                name="att_record_student_time_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.student.student_code} - {self.attendance_session.class_session}"

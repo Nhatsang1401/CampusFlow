@@ -5,13 +5,16 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from apps.academics.models import (
+    AcademicClass,
     AcademicTerm,
     Classroom,
     ClassSession,
     Course,
     CourseSection,
+    Enrollment,
     Faculty,
     LecturerProfile,
+    StudentProfile,
     Timetable,
     Weekday,
 )
@@ -25,6 +28,13 @@ def attendance_data(db):
     faculty = Faculty.objects.create(
         code="CNTT",
         name="Công nghệ thông tin",
+    )
+
+    academic_class = AcademicClass.objects.create(
+        code="CNTT-K20",
+        name="Công nghệ thông tin K20",
+        faculty=faculty,
+        academic_year="2024-2028",
     )
 
     lecturer_user = User.objects.create_user(
@@ -57,6 +67,12 @@ def attendance_data(db):
         role=UserRole.STUDENT,
     )
 
+    student_profile = StudentProfile.objects.create(
+        student_code="SV001",
+        user=student_user,
+        academic_class=academic_class,
+    )
+
     course = Course.objects.create(
         code="IT101",
         name="Lập trình Python",
@@ -81,6 +97,11 @@ def attendance_data(db):
         max_students=50,
         registration_open=True,
         is_active=True,
+    )
+
+    enrollment = Enrollment.objects.create(
+        student=student_profile,
+        course_section=section,
     )
 
     classroom = Classroom.objects.create(
@@ -118,6 +139,9 @@ def attendance_data(db):
         "classroom": classroom,
         "timetable": timetable,
         "class_session": class_session,
+        "academic_class": academic_class,
+        "student_profile": student_profile,
+        "enrollment": enrollment,
     }
 
 
