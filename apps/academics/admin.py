@@ -4,6 +4,8 @@ from django.db.models import Count, Q
 from .models import (
     AcademicClass,
     AcademicTerm,
+    Classroom,
+    ClassSession,
     Course,
     CourseSection,
     Enrollment,
@@ -11,6 +13,7 @@ from .models import (
     Faculty,
     LecturerProfile,
     StudentProfile,
+    Timetable,
 )
 
 
@@ -261,3 +264,108 @@ class EnrollmentAdmin(admin.ModelAdmin):
     @admin.display(description="Học kỳ")
     def get_term(self, obj):
         return obj.course_section.term
+
+
+@admin.register(Classroom)
+class ClassroomAdmin(admin.ModelAdmin):
+    list_display = (
+        "code",
+        "name",
+        "building",
+        "floor",
+        "capacity",
+        "classroom_type",
+        "is_active",
+    )
+    list_filter = ("building", "classroom_type", "is_active")
+    search_fields = ("code", "name", "building")
+    ordering = ("building", "floor", "code")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Timetable)
+class TimetableAdmin(admin.ModelAdmin):
+    list_display = (
+        "course_section",
+        "weekday",
+        "start_time",
+        "end_time",
+        "classroom",
+        "effective_start",
+        "effective_end",
+        "is_active",
+    )
+    list_filter = (
+        "weekday",
+        "classroom",
+        "is_active",
+        "course_section__term",
+    )
+    search_fields = (
+        "course_section__code",
+        "course_section__course__code",
+        "course_section__course__name",
+        "classroom__code",
+        "classroom__name",
+        "course_section__lecturer__lecturer_code",
+    )
+    raw_id_fields = ("course_section", "classroom")
+    list_select_related = (
+        "course_section",
+        "course_section__course",
+        "course_section__lecturer",
+        "classroom",
+    )
+    ordering = ("weekday", "start_time")
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "effective_start"
+
+
+@admin.register(ClassSession)
+class ClassSessionAdmin(admin.ModelAdmin):
+    list_display = (
+        "session_date",
+        "get_course_section",
+        "get_weekday",
+        "get_time",
+        "get_classroom",
+        "status",
+    )
+    list_filter = (
+        "status",
+        "session_date",
+        "timetable__course_section__term",
+        "timetable__classroom",
+    )
+    search_fields = (
+        "timetable__course_section__code",
+        "timetable__course_section__course__name",
+        "timetable__classroom__code",
+        "topic",
+    )
+    raw_id_fields = ("timetable",)
+    list_select_related = (
+        "timetable",
+        "timetable__course_section",
+        "timetable__course_section__course",
+        "timetable__classroom",
+    )
+    ordering = ("-session_date",)
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "session_date"
+
+    @admin.display(description="Lớp học phần")
+    def get_course_section(self, obj):
+        return obj.timetable.course_section
+
+    @admin.display(description="Thứ")
+    def get_weekday(self, obj):
+        return obj.timetable.get_weekday_display()
+
+    @admin.display(description="Thời gian")
+    def get_time(self, obj):
+        return f"{obj.timetable.start_time:%H:%M} - {obj.timetable.end_time:%H:%M}"
+
+    @admin.display(description="Phòng")
+    def get_classroom(self, obj):
+        return obj.timetable.classroom

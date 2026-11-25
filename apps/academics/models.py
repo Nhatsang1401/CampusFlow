@@ -1,3 +1,4 @@
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -23,6 +24,29 @@ class EnrollmentStatus(models.TextChoices):
     REGISTERED = "registered", "Đang đăng ký"
     CANCELLED = "cancelled", "Đã hủy"
     COMPLETED = "completed", "Đã hoàn thành"
+
+
+class ClassroomType(models.TextChoices):
+    LECTURE = "lecture", "Phòng lý thuyết"
+    LAB = "lab", "Phòng thực hành"
+    MEETING = "meeting", "Phòng hội thảo"
+    OTHER = "other", "Khác"
+
+
+class ClassSessionStatus(models.TextChoices):
+    UPCOMING = "upcoming", "Sắp diễn ra"
+    COMPLETED = "completed", "Đã hoàn thành"
+    CANCELLED = "cancelled", "Đã hủy"
+
+
+class Weekday(models.IntegerChoices):
+    MONDAY = 0, "Thứ 2"
+    TUESDAY = 1, "Thứ 3"
+    WEDNESDAY = 2, "Thứ 4"
+    THURSDAY = 3, "Thứ 5"
+    FRIDAY = 4, "Thứ 6"
+    SATURDAY = 5, "Thứ 7"
+    SUNDAY = 6, "Chủ nhật"
 
 
 class Faculty(models.Model):
@@ -571,3 +595,333 @@ class Enrollment(models.Model):
 
     def __str__(self) -> str:
         return f"{self.student.student_code} - {self.course_section.code}"
+
+
+class Classroom(models.Model):
+    code = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name="Mã phòng",
+    )
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Tên phòng",
+    )
+    building = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        verbose_name="Tòa nhà",
+    )
+    floor = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+        verbose_name="Tầng",
+    )
+    capacity = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name="Sức chứa",
+    )
+    classroom_type = models.CharField(
+        max_length=20,
+        choices=ClassroomType.choices,
+        default=ClassroomType.LECTURE,
+        verbose_name="Loại phòng",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="Đang hoạt động",
+    )
+    description = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Mô tả",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Ngày tạo",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Cập nhật lần cuối",
+    )
+
+    class Meta:
+        db_table = "academics_classroom"
+        verbose_name = "Phòng học"
+        verbose_name_plural = "Danh sách phòng học"
+        ordering = ["building", "floor", "code"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(capacity__gte=1),
+                name="acad_classroom_capacity_positive",
+            ),
+            models.CheckConstraint(
+                condition=Q(floor__gte=1),
+                name="acad_classroom_floor_positive",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["building", "floor"],
+                name="acad_classroom_build_floor_idx",
+            ),
+            models.Index(
+                fields=["is_active", "classroom_type"],
+                name="acad_classroom_active_type_idx",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        if self.capacity is not None and self.capacity < 1:
+            errors["capacity"] = "Sức chứa phòng phải lớn hơn 0."
+
+        if self.floor is not None and self.floor < 1:
+            errors["floor"] = "Tầng phải lớn hơn hoặc bằng 1."
+
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class Timetable(models.Model):
+    course_section = models.ForeignKey(
+        CourseSection,
+        on_delete=models.PROTECT,
+        related_name="timetables",
+        verbose_name="Lớp học phần",
+    )
+    classroom = models.ForeignKey(
+        Classroom,
+        on_delete=models.PROTECT,
+        related_name="timetables",
+        verbose_name="Phòng học",
+    )
+    weekday = models.PositiveSmallIntegerField(
+        choices=Weekday.choices,
+        verbose_name="Thứ",
+    )
+    start_time = models.TimeField(
+        verbose_name="Giờ bắt đầu",
+    )
+    end_time = models.TimeField(
+        verbose_name="Giờ kết thúc",
+    )
+    effective_start = models.DateField(
+        verbose_name="Ngày bắt đầu áp dụng",
+    )
+    effective_end = models.DateField(
+        verbose_name="Ngày kết thúc áp dụng",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="Đang áp dụng",
+    )
+    note = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="Ghi chú",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Ngày tạo",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Cập nhật lần cuối",
+    )
+
+    class Meta:
+        db_table = "academics_timetable"
+        verbose_name = "Thời khóa biểu"
+        verbose_name_plural = "Danh sách thời khóa biểu"
+        ordering = ["weekday", "start_time", "classroom"]
+        indexes = [
+            models.Index(
+                fields=["weekday", "is_active"],
+                name="acad_timetable_day_active_idx",
+            ),
+            models.Index(
+                fields=["course_section", "is_active"],
+                name="acad_tt_section_active_idx",
+            ),
+            models.Index(
+                fields=["classroom", "weekday"],
+                name="acad_timetable_room_day_idx",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        if self.start_time and self.end_time:
+            if self.start_time >= self.end_time:
+                errors["end_time"] = "Giờ kết thúc phải sau giờ bắt đầu."
+
+        if self.effective_start and self.effective_end:
+            if self.effective_start > self.effective_end:
+                errors["effective_end"] = "Ngày kết thúc áp dụng phải sau hoặc bằng ngày bắt đầu."
+
+        if self.weekday not in Weekday.values:
+            errors["weekday"] = "Thứ trong tuần không hợp lệ."
+
+        if self.course_section_id and self.classroom_id:
+            section = self.course_section
+            classroom = self.classroom
+
+            if not section.is_active:
+                errors["course_section"] = "Lớp học phần không hoạt động."
+
+            if not classroom.is_active:
+                errors["classroom"] = "Phòng học hiện không hoạt động."
+
+            if classroom.capacity < section.max_students:
+                errors["classroom"] = "Sức chứa phòng không đủ cho sĩ số tối đa của lớp học phần."
+
+            term = section.term
+            if self.effective_start and self.effective_end:
+                if self.effective_start < term.start_date or self.effective_end > term.end_date:
+                    errors["effective_start"] = (
+                        "Thời gian áp dụng phải nằm trong thời gian của học kỳ."
+                    )
+
+            if (
+                self.is_active
+                and self.start_time
+                and self.end_time
+                and self.effective_start
+                and self.effective_end
+                and self.weekday in Weekday.values
+            ):
+                conflicts = Timetable.objects.filter(
+                    is_active=True,
+                    weekday=self.weekday,
+                    effective_start__lte=self.effective_end,
+                    effective_end__gte=self.effective_start,
+                    start_time__lt=self.end_time,
+                    end_time__gt=self.start_time,
+                ).filter(
+                    Q(classroom_id=classroom.pk)
+                    | Q(course_section__lecturer_id=section.lecturer_id)
+                )
+
+                if self.pk:
+                    conflicts = conflicts.exclude(pk=self.pk)
+
+                for conflict in conflicts.select_related(
+                    "classroom",
+                    "course_section__lecturer",
+                ):
+                    if conflict.classroom_id == classroom.pk:
+                        errors["classroom"] = (
+                            "Phòng học đã có lịch khác trong khoảng thời gian này."
+                        )
+                    if conflict.course_section.lecturer_id == section.lecturer_id:
+                        errors["course_section"] = (
+                            "Giảng viên đã có lịch dạy khác trong khoảng thời gian này."
+                        )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self):
+        return (
+            f"{self.course_section.code} - "
+            f"{self.get_weekday_display()} "
+            f"{self.start_time:%H:%M}-{self.end_time:%H:%M}"
+        )
+
+
+class ClassSession(models.Model):
+    timetable = models.ForeignKey(
+        Timetable,
+        on_delete=models.PROTECT,
+        related_name="sessions",
+        verbose_name="Lịch học",
+    )
+    session_date = models.DateField(
+        verbose_name="Ngày học",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=ClassSessionStatus.choices,
+        default=ClassSessionStatus.UPCOMING,
+        db_index=True,
+        verbose_name="Trạng thái buổi học",
+    )
+    topic = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="Nội dung buổi học",
+    )
+    note = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Ghi chú",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Ngày tạo",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Cập nhật lần cuối",
+    )
+
+    class Meta:
+        db_table = "academics_class_session"
+        verbose_name = "Buổi học"
+        verbose_name_plural = "Danh sách buổi học"
+        ordering = ["session_date", "timetable__start_time"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["timetable", "session_date"],
+                name="acad_session_timetable_date_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["session_date", "status"],
+                name="acad_session_date_status_idx",
+            ),
+            models.Index(
+                fields=["timetable", "session_date"],
+                name="acad_session_tt_date_idx",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        if self.timetable_id and self.session_date:
+            timetable = self.timetable
+            term = timetable.course_section.term
+
+            if not timetable.is_active:
+                errors["timetable"] = "Lịch học hiện không hoạt động."
+
+            if not (timetable.effective_start <= self.session_date <= timetable.effective_end):
+                errors["session_date"] = "Ngày học nằm ngoài thời gian áp dụng của thời khóa biểu."
+
+            if not (term.start_date <= self.session_date <= term.end_date):
+                errors["session_date"] = "Ngày học phải nằm trong thời gian của học kỳ."
+
+            if self.session_date.weekday() != timetable.weekday:
+                errors["session_date"] = "Ngày đã chọn không đúng thứ của thời khóa biểu."
+
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self):
+        return f"{self.timetable.course_section.code} - {self.session_date:%d/%m/%Y}"
