@@ -60,6 +60,7 @@ class AttendanceSessionListCreateView(APIView):
                 class_session_id=serializer.validated_data["class_session_id"],
                 user=request.user,
                 duration_minutes=serializer.validated_data["duration_minutes"],
+                request=request,
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages) from exc
@@ -102,6 +103,7 @@ class AttendanceSessionCloseView(APIView):
             session = close_attendance_session(
                 session_id=pk,
                 user=request.user,
+                request=request,
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages) from exc
@@ -120,6 +122,7 @@ class StudentCheckInView(APIView):
             record = check_in_student(
                 token=serializer.validated_data["token"],
                 user=request.user,
+                request=request,
             )
         except DjangoValidationError as exc:
             raise ValidationError(exc.messages) from exc

@@ -35,4 +35,8 @@ urlpatterns = [
         "api/attendance/",
         include("apps.attendance.urls"),
     ),
+    path(
+        "api/core/",
+        include("apps.core.urls"),
+    ),
 ]

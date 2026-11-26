@@ -17,6 +17,12 @@ from apps.academics.models import (
     StudentProfile,
 )
 from apps.accounts.models import UserRole
+from apps.core.models import NotificationType
+from apps.core.services import (
+    create_audit_log,
+    create_notification,
+    create_notifications,
+)
 
 from .models import (
     AttendanceRecord,
@@ -77,12 +83,25 @@ def _validate_actor(user):
         raise ValidationError("Chỉ giảng viên mới được mở phiên điểm danh.")
 
 
+def _get_registered_student_users(course_section):
+    return list(
+        StudentProfile.objects.filter(
+            enrollments__course_section=course_section,
+            enrollments__status=EnrollmentStatus.REGISTERED,
+            user__is_active=True,
+        )
+        .values_list("user", flat=True)
+        .distinct()
+    )
+
+
 @transaction.atomic
 def create_attendance_session(
     *,
     class_session_id: int,
     user,
     duration_minutes: int = DEFAULT_SESSION_MINUTES,
+    request=None,
 ):
     _validate_actor(user)
 
@@ -98,6 +117,7 @@ def create_attendance_session(
         .select_related(
             "timetable",
             "timetable__course_section",
+            "timetable__course_section__course",
             "timetable__course_section__lecturer",
         )
         .filter(pk=class_session_id)
@@ -110,7 +130,8 @@ def create_attendance_session(
     if class_session.status == ClassSessionStatus.CANCELLED:
         raise ValidationError("Buổi học đã bị hủy.")
 
-    lecturer = class_session.timetable.course_section.lecturer
+    course_section = class_session.timetable.course_section
+    lecturer = course_section.lecturer
 
     if not user.is_superuser and lecturer.user_id != user.pk:
         raise ValidationError("Bạn không phụ trách buổi học này.")
@@ -146,16 +167,55 @@ def create_attendance_session(
     session.full_clean()
     session.save()
 
+    action = "attendance.session.created" if created else "attendance.session.rotated"
+
+    create_audit_log(
+        actor=user,
+        action=action,
+        object_type="AttendanceSession",
+        object_id=session.pk,
+        description="Giảng viên mở phiên điểm danh.",
+        changes={
+            "class_session_id": class_session.pk,
+            "course_section_id": course_section.pk,
+            "duration_minutes": duration_minutes,
+            "expires_at": session.expires_at.isoformat(),
+        },
+        request=request,
+    )
+
+    student_user_ids = _get_registered_student_users(course_section)
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    recipients = User.objects.filter(
+        pk__in=student_user_ids,
+        is_active=True,
+    )
+
+    create_notifications(
+        recipients=recipients,
+        title="Phiên điểm danh đã mở",
+        message=(
+            f"Giảng viên đã mở điểm danh cho học phần "
+            f"{course_section.course.code} - {course_section.course.name}. "
+            f"Vui lòng thực hiện điểm danh trong thời gian quy định."
+        ),
+        notification_type=NotificationType.INFO,
+        link="/diem-danh/",
+    )
+
     return session, token
 
 
 @transaction.atomic
-def close_attendance_session(*, session_id: int, user):
+def close_attendance_session(*, session_id: int, user, request=None):
     _validate_actor(user)
 
     session = (
         AttendanceSession.objects.select_for_update()
         .select_related(
+            "class_session__timetable__course_section__course",
             "class_session__timetable__course_section__lecturer",
         )
         .filter(pk=session_id)
@@ -165,7 +225,8 @@ def close_attendance_session(*, session_id: int, user):
     if session is None:
         raise ValidationError("Không tìm thấy phiên điểm danh.")
 
-    lecturer = session.class_session.timetable.course_section.lecturer
+    course_section = session.class_session.timetable.course_section
+    lecturer = course_section.lecturer
 
     if not user.is_superuser and lecturer.user_id != user.pk:
         raise ValidationError("Bạn không có quyền đóng phiên này.")
@@ -177,11 +238,46 @@ def close_attendance_session(*, session_id: int, user):
     session.full_clean()
     session.save(update_fields=["status", "updated_at"])
 
+    create_audit_log(
+        actor=user,
+        action="attendance.session.closed",
+        object_type="AttendanceSession",
+        object_id=session.pk,
+        description="Giảng viên đóng phiên điểm danh.",
+        changes={
+            "class_session_id": session.class_session_id,
+            "course_section_id": course_section.pk,
+            "status": AttendanceSessionStatus.CLOSED,
+        },
+        request=request,
+    )
+
+    student_user_ids = _get_registered_student_users(course_section)
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    recipients = User.objects.filter(
+        pk__in=student_user_ids,
+        is_active=True,
+    )
+
+    create_notifications(
+        recipients=recipients,
+        title="Phiên điểm danh đã đóng",
+        message=(
+            f"Phiên điểm danh của học phần "
+            f"{course_section.course.code} - {course_section.course.name} "
+            f"đã được giảng viên đóng."
+        ),
+        notification_type=NotificationType.WARNING,
+        link="/diem-danh/",
+    )
+
     return session
 
 
 @transaction.atomic
-def check_in_student(*, token: str, user):
+def check_in_student(*, token: str, user, request=None):
     """
     Check in the authenticated student using a raw attendance token.
 
@@ -201,7 +297,6 @@ def check_in_student(*, token: str, user):
         student = user.student_profile
     except StudentProfile.DoesNotExist as exc:
         raise ValidationError("Tài khoản chưa được liên kết với hồ sơ sinh viên.") from exc
-        raise
 
     token_hash = AttendanceSession.hash_token(token)
 
@@ -211,6 +306,7 @@ def check_in_student(*, token: str, user):
             "class_session",
             "class_session__timetable",
             "class_session__timetable__course_section",
+            "class_session__timetable__course_section__course",
         )
         .filter(token_hash=token_hash)
         .first()
@@ -246,8 +342,6 @@ def check_in_student(*, token: str, user):
     if not is_enrolled:
         raise ValidationError("Bạn không có đăng ký hợp lệ trong lớp học phần này.")
 
-    # Use a nested transaction/savepoint so an IntegrityError does not
-    # leave the outer transaction unusable.
     try:
         with transaction.atomic():
             record = AttendanceRecord.objects.create(
@@ -257,5 +351,31 @@ def check_in_student(*, token: str, user):
             )
     except IntegrityError as exc:
         raise ValidationError("Bạn đã điểm danh cho buổi học này rồi.") from exc
+
+    create_notification(
+        recipient=user,
+        title="Điểm danh thành công",
+        message=(
+            f"Bạn đã điểm danh thành công học phần "
+            f"{course_section.course.code} - {course_section.course.name}."
+        ),
+        notification_type=NotificationType.SUCCESS,
+        link="/diem-danh/lich-su/",
+    )
+
+    create_audit_log(
+        actor=user,
+        action="attendance.check_in.created",
+        object_type="AttendanceRecord",
+        object_id=record.pk,
+        description="Sinh viên điểm danh thành công.",
+        changes={
+            "attendance_session_id": session.pk,
+            "class_session_id": class_session.pk,
+            "student_profile_id": student.pk,
+            "checked_in_at": record.checked_in_at.isoformat(),
+        },
+        request=request,
+    )
 
     return record
