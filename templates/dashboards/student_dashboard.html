@@ -1,0 +1,143 @@
+
+{% extends "dashboards/base_dashboard.html" %}
+
+{% block title %}Dashboard sinh viên | CampusFlow{% endblock %}
+{% block topbar_title %}Không gian sinh viên{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <h1>Xin chào, {{ request.user.get_full_name|default:request.user.username }}</h1>
+    <p>Theo dõi học phần, lịch học và kết quả điểm danh của bạn.</p>
+</div>
+
+{% if not has_profile %}
+    <div class="profile-warning">
+        Tài khoản chưa được liên kết với hồ sơ sinh viên.
+        Vui lòng liên hệ quản trị viên để cập nhật thông tin.
+    </div>
+{% else %}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Học phần đã đăng ký</div>
+            <div class="stat-value">{{ total_sections }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Buổi học sắp tới</div>
+            <div class="stat-value">{{ upcoming_sessions|length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Tổng lượt điểm danh</div>
+            <div class="stat-value">{{ total_attendance_records }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Thông báo chưa đọc</div>
+            <div class="stat-value">{{ unread_notifications }}</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Thời khóa biểu sắp tới</h2>
+
+        {% if upcoming_sessions %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày học</th>
+                            <th>Học phần</th>
+                            <th>Giảng viên</th>
+                            <th>Thời gian</th>
+                            <th>Phòng học</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in upcoming_sessions %}
+                            <tr>
+                                <td>{{ session.session_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    {{ session.timetable.course_section.course.code }}
+                                    -
+                                    {{ session.timetable.course_section.course.name }}
+                                </td>
+                                <td>
+                                    {{ session.timetable.course_section.lecturer.user.get_full_name|default:session.timetable.course_section.lecturer.user.username }}
+                                </td>
+                                <td>
+                                    {{ session.timetable.start_time|time:"H:i" }}
+                                    -
+                                    {{ session.timetable.end_time|time:"H:i" }}
+                                </td>
+                                <td>{{ session.timetable.classroom.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">Bạn chưa có buổi học sắp tới.</div>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>Lịch sử điểm danh gần đây</h2>
+
+        {% if recent_attendance %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Thời gian điểm danh</th>
+                            <th>Học phần</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in recent_attendance %}
+                            <tr>
+                                <td>{{ record.checked_in_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {{ record.attendance_session.class_session.timetable.course_section.course.code }}
+                                    -
+                                    {{ record.attendance_session.class_session.timetable.course_section.course.name }}
+                                </td>
+                                <td><span class="status">Đã điểm danh</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">Bạn chưa có lịch sử điểm danh.</div>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>Học phần đã đăng ký</h2>
+
+        {% if enrollments %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Mã lớp học phần</th>
+                            <th>Học phần</th>
+                            <th>Học kỳ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrollments %}
+                            <tr>
+                                <td>{{ enrollment.course_section.code }}</td>
+                                <td>{{ enrollment.course_section.course.name }}</td>
+                                <td>{{ enrollment.course_section.term.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">Bạn chưa đăng ký học phần nào.</div>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -24,6 +24,9 @@ class CampusFlowLoginView(LoginView):
     authentication_form = CampusFlowLoginForm
     redirect_authenticated_user = True
 
+    def get_success_url(self):
+        return reverse_lazy("dashboards:index")
+
 
 class CampusFlowLogoutView(LogoutView):
     """Handle secure POST-based logout."""

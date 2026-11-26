@@ -80,6 +80,7 @@ LOCAL_APPS = [
     "apps.accounts.apps.AccountsConfig",
     "apps.academics.apps.AcademicsConfig",
     "apps.attendance.apps.AttendanceConfig",
+    "apps.dashboards.apps.DashboardsConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -185,7 +186,7 @@ AUTHENTICATION_BACKENDS = [
 
 LOGIN_URL = "accounts:login"
 
-LOGIN_REDIRECT_URL = "accounts:profile"
+LOGIN_REDIRECT_URL = "dashboards:index"
 
 LOGOUT_REDIRECT_URL = "accounts:login"
 

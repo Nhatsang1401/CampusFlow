@@ -1,0 +1,309 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CampusFlow - Hệ thống quản lý học tập.">
+    <title>{% block title %}Dashboard | CampusFlow{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #14233f;
+            --navy-light: #1d3358;
+            --blue: #2563eb;
+            --bg: #f4f7fb;
+            --surface: #ffffff;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #e5eaf1;
+            --success: #15803d;
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Be Vietnam Pro", sans-serif;
+            font-size: 14px;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .layout {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+        }
+
+        .sidebar {
+            background: var(--navy);
+            color: #e2e8f0;
+            padding: 26px 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px 30px;
+            font-size: 21px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 11px;
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .nav-label {
+            margin: 12px 10px;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 12px 13px;
+            margin: 5px 0;
+            border-radius: 9px;
+            color: #cbd5e1;
+            transition: background .2s, color .2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--navy-light);
+            color: #fff;
+        }
+
+        .main { min-width: 0; }
+
+        .topbar {
+            min-height: 76px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 30px;
+        }
+
+        .topbar-title { font-size: 17px; font-weight: 700; }
+
+        .user-info {
+            color: var(--muted);
+            text-align: right;
+        }
+
+        .user-info strong {
+            display: block;
+            color: var(--text);
+        }
+
+        .content {
+            max-width: 1500px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        .page-heading { margin-bottom: 24px; }
+
+        .page-heading h1 {
+            margin: 0 0 7px;
+            font-size: 25px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card, .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .stat-label { color: var(--muted); font-size: 13px; }
+
+        .stat-value {
+            margin-top: 12px;
+            font-size: 29px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .panel { margin-bottom: 20px; }
+
+        .panel h2 {
+            margin: 0 0 18px;
+            font-size: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table th, .data-table td {
+            padding: 13px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .data-table th {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .data-table tr:last-child td { border-bottom: 0; }
+
+        .muted { color: var(--muted); }
+
+        .empty-state {
+            padding: 30px 16px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .profile-warning {
+            padding: 15px 18px;
+            margin-bottom: 20px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            color: #9a3412;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: var(--success);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .footer {
+            padding: 18px 30px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 1100px) {
+            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 760px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { padding: 15px; }
+            .brand { padding-bottom: 12px; }
+            .nav-label { display: none; }
+            .sidebar nav { display: flex; flex-wrap: wrap; gap: 5px; }
+            .nav-link { margin: 0; padding: 9px 11px; }
+            .content { padding: 20px 15px; }
+            .topbar { padding: 14px 16px; }
+            .stats-grid { gap: 10px; }
+            .stat-card { padding: 15px; }
+            .stat-value { font-size: 24px; }
+            .table-wrap { overflow-x: auto; }
+            .data-table { min-width: 600px; }
+        }
+
+        @media (max-width: 420px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .page-heading h1 { font-size: 21px; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <a class="brand" href="{% url 'dashboards:index' %}">
+            <span class="brand-mark">C</span>
+            <span>CampusFlow</span>
+        </a>
+
+        <div class="nav-label">Không gian làm việc</div>
+        <nav>
+            <a class="nav-link active" href="{% url 'dashboards:index' %}">
+                Tổng quan
+            </a>
+            <a class="nav-link" href="{% url 'accounts:profile' %}">
+                Hồ sơ cá nhân
+            </a>
+            <a class="nav-link" href="{% url 'accounts:password_change' %}">
+                Đổi mật khẩu
+            </a>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button class="nav-link" type="submit"
+                        style="width:100%;border:0;text-align:left;cursor:pointer;font:inherit;background:transparent;">
+                    Đăng xuất
+                </button>
+            </form>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="topbar-title">
+                {% block topbar_title %}Tổng quan{% endblock %}
+            </div>
+            <div class="user-info">
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                {{ request.user.display_role }}
+            </div>
+        </header>
+
+        <section class="content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="profile-warning">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </section>
+
+        <footer class="footer">
+            CampusFlow · Hệ thống quản lý học tập
+        </footer>
+    </main>
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

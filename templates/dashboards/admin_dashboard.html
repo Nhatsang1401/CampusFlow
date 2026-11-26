@@ -1,0 +1,96 @@
+
+{% extends "dashboards/base_dashboard.html" %}
+
+{% block title %}Quản trị hệ thống | CampusFlow{% endblock %}
+{% block topbar_title %}Quản trị hệ thống{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <h1>Tổng quan hệ thống</h1>
+    <p>Thống kê hoạt động và dữ liệu đào tạo toàn trường.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Tổng tài khoản</div>
+        <div class="stat-value">{{ total_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Tài khoản hoạt động</div>
+        <div class="stat-value">{{ active_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Sinh viên</div>
+        <div class="stat-value">{{ total_students }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Giảng viên</div>
+        <div class="stat-value">{{ total_lecturers }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Khoa</div>
+        <div class="stat-value">{{ total_faculties }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Lớp hành chính</div>
+        <div class="stat-value">{{ total_classes }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Lớp học phần</div>
+        <div class="stat-value">{{ total_course_sections }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Lớp học phần đang hoạt động</div>
+        <div class="stat-value">{{ active_course_sections }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Tổng buổi học</div>
+        <div class="stat-value">{{ total_class_sessions }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Buổi học sắp diễn ra</div>
+        <div class="stat-value">{{ upcoming_sessions }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Buổi học hoàn thành</div>
+        <div class="stat-value">{{ completed_sessions }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Lượt điểm danh</div>
+        <div class="stat-value">{{ total_attendance_records }}</div>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>Hoạt động hệ thống gần đây</h2>
+
+    {% if recent_audit_logs %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Người thực hiện</th>
+                        <th>Hành động</th>
+                        <th>Đối tượng</th>
+                        <th>Mô tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_audit_logs %}
+                        <tr>
+                            <td>{{ log.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ log.actor_label|default:"Hệ thống" }}</td>
+                            <td>{{ log.action }}</td>
+                            <td>{{ log.object_type }} #{{ log.object_id }}</td>
+                            <td>{{ log.description|truncatechars:70 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">Chưa có hoạt động hệ thống.</div>
+    {% endif %}
+</div>
+{% endblock %}
