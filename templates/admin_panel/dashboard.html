@@ -1,0 +1,95 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Tổng quan quản trị | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ADMINISTRATION</span>
+        <h1>Tổng quan hệ thống</h1>
+        <p>Theo dõi dữ liệu và hoạt động của CampusFlow.</p>
+    </div>
+</div>
+
+<div class="admin-stat-grid">
+    <article class="admin-stat-card">
+        <span>Tổng tài khoản</span>
+        <strong>{{ total_users }}</strong>
+        <small>{{ active_users }} đang hoạt động · {{ inactive_users }} bị khóa</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Sinh viên</span>
+        <strong>{{ total_students }}</strong>
+        <small>Hồ sơ sinh viên</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Giảng viên</span>
+        <strong>{{ total_lecturers }}</strong>
+        <small>Hồ sơ giảng viên</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Khoa</span>
+        <strong>{{ total_faculties }}</strong>
+        <small>Đơn vị đào tạo</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Lớp học phần</span>
+        <strong>{{ total_course_sections }}</strong>
+        <small>{{ total_enrollments }} lượt đăng ký</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Buổi học</span>
+        <strong>{{ total_class_sessions }}</strong>
+        <small>{{ total_attendance_sessions }} phiên điểm danh</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Lượt điểm danh</span>
+        <strong>{{ total_attendance_records }}</strong>
+        <small>Bản ghi điểm danh</small>
+    </article>
+    <article class="admin-stat-card">
+        <span>Thông báo</span>
+        <strong>{{ total_notifications }}</strong>
+        <small>{{ total_audit_logs }} bản ghi audit</small>
+    </article>
+</div>
+
+<section class="admin-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Hoạt động gần đây</h2>
+            <p>Các sự kiện mới nhất được ghi nhận trong hệ thống.</p>
+        </div>
+    </div>
+
+    {% if recent_audit_logs %}
+        <div class="table-scroll">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Người thực hiện</th>
+                    <th>Hành động</th>
+                    <th>Đối tượng</th>
+                    <th>Mô tả</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for log in recent_audit_logs %}
+                    <tr>
+                        <td>{{ log.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ log.actor_label|default:"Hệ thống" }}</td>
+                        <td><code>{{ log.action }}</code></td>
+                        <td>{{ log.object_type }} #{{ log.object_id }}</td>
+                        <td>{{ log.description|truncatechars:65 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="admin-empty">Chưa có hoạt động được ghi nhận.</div>
+    {% endif %}
+</section>
+{% endblock %}

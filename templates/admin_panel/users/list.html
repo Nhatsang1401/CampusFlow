@@ -1,0 +1,119 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Quản lý tài khoản | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading page-heading-row">
+    <div>
+        <span class="eyebrow">USER MANAGEMENT</span>
+        <h1>Quản lý tài khoản</h1>
+        <p>Tìm kiếm, cập nhật và kiểm soát trạng thái tài khoản.</p>
+    </div>
+    <a class="admin-button primary" href="{% url 'admin_panel:user_create' %}">
+        + Tạo tài khoản
+    </a>
+</div>
+
+<section class="admin-panel">
+    <form method="get" class="filter-bar">
+        <input type="search" name="q" value="{{ query }}"
+               placeholder="Tìm username, họ tên, email, số điện thoại...">
+
+        <select name="role">
+            <option value="">Tất cả vai trò</option>
+            <option value="student" {% if selected_role == "student" %}selected{% endif %}>Sinh viên</option>
+            <option value="lecturer" {% if selected_role == "lecturer" %}selected{% endif %}>Giảng viên</option>
+        </select>
+
+        <select name="active">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active" {% if selected_active == "active" %}selected{% endif %}>Đang hoạt động</option>
+            <option value="inactive" {% if selected_active == "inactive" %}selected{% endif %}>Đã khóa</option>
+        </select>
+
+        <button class="admin-button primary" type="submit">Lọc dữ liệu</button>
+        <a class="admin-button secondary" href="{% url 'admin_panel:user_list' %}">Đặt lại</a>
+    </form>
+
+    <div class="table-toolbar">
+        <span>{{ page_obj.paginator.count }} tài khoản</span>
+        <span>Trang {{ page_obj.number }}/{{ page_obj.paginator.num_pages|default:1 }}</span>
+    </div>
+
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Tài khoản</th>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Ngày tham gia</th>
+                <th class="text-right">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in page_obj %}
+                <tr>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.get_full_name|default:"—" }}</td>
+                    <td>{{ user.email|default:"—" }}</td>
+                    <td>
+                        {% if user.role == "student" %}
+                            <span class="role-pill student">Sinh viên</span>
+                        {% else %}
+                            <span class="role-pill lecturer">Giảng viên</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="status-pill active">Hoạt động</span>
+                        {% else %}
+                            <span class="status-pill inactive">Đã khóa</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                    <td class="text-right">
+                        <div class="row-actions">
+                            <a class="table-action"
+                               href="{% url 'admin_panel:user_update' user.pk %}">Sửa</a>
+
+                            <form method="post"
+                                  action="{% url 'admin_panel:user_toggle_active' user.pk %}"
+                                  data-confirm="{% if user.is_active %}Bạn chắc chắn muốn khóa tài khoản này?{% else %}Bạn muốn mở khóa tài khoản này?{% endif %}">
+                                {% csrf_token %}
+                                <button class="table-action danger" type="submit">
+                                    {% if user.is_active %}Khóa{% else %}Mở khóa{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="admin-empty">Không tìm thấy tài khoản phù hợp.</div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="pagination" aria-label="Phân trang">
+            {% if page_obj.has_previous %}
+                <a href="?q={{ query|urlencode }}&role={{ selected_role|urlencode }}&active={{ selected_active|urlencode }}&page={{ page_obj.previous_page_number }}">← Trước</a>
+            {% endif %}
+
+            <span>Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?q={{ query|urlencode }}&role={{ selected_role|urlencode }}&active={{ selected_active|urlencode }}&page={{ page_obj.next_page_number }}">Sau →</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

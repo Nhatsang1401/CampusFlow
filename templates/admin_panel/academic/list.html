@@ -1,0 +1,472 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ page_title }} | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ACADEMIC MANAGEMENT</span>
+        <h1>{{ page_title }}</h1>
+        <p>Quản lý và tra cứu dữ liệu đào tạo trong hệ thống CampusFlow.</p>
+    </div>
+
+    {% if create_url %}
+        <a href="{% url create_url %}" class="btn btn-primary">
+            <span aria-hidden="true">＋</span>
+            Thêm mới
+        </a>
+    {% endif %}
+</div>
+
+<section class="admin-card">
+    <form method="get" class="admin-filter-form">
+        <div class="filter-search">
+            <label for="searchQuery">Tìm kiếm</label>
+            <input
+                type="search"
+                id="searchQuery"
+                name="q"
+                value="{{ query|default:'' }}"
+                placeholder="Nhập từ khóa cần tìm..."
+            >
+        </div>
+
+        {% if list_type == "class" or list_type == "student" or list_type == "lecturer" %}
+            <div class="filter-field">
+                <label for="facultyFilter">Khoa</label>
+                <select id="facultyFilter" name="faculty">
+                    <option value="">Tất cả khoa</option>
+                    {% for faculty in faculties %}
+                        <option
+                            value="{{ faculty.pk }}"
+                            {% if selected_faculty == faculty.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ faculty.code }} - {{ faculty.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        {% if list_type == "student" %}
+            <div class="filter-field">
+                <label for="classFilter">Lớp hành chính</label>
+                <select id="classFilter" name="class">
+                    <option value="">Tất cả lớp</option>
+                    {% for academic_class in classes %}
+                        <option
+                            value="{{ academic_class.pk }}"
+                            {% if selected_class == academic_class.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ academic_class.code }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        {% if list_type == "classroom" or list_type == "timetable" %}
+            <div class="filter-field">
+                <label for="activeFilter">Trạng thái</label>
+                <select id="activeFilter" name="active">
+                    <option value="">Tất cả</option>
+                    <option value="active" {% if selected_active == "active" %}selected{% endif %}>
+                        Đang hoạt động
+                    </option>
+                    <option value="inactive" {% if selected_active == "inactive" %}selected{% endif %}>
+                        Ngừng hoạt động
+                    </option>
+                </select>
+            </div>
+        {% endif %}
+
+        {% if list_type == "faculty" or list_type == "class" or list_type == "term" or list_type == "course" %}
+            <div class="filter-field">
+                <label for="activeFilter">Trạng thái</label>
+                <select id="activeFilter" name="active">
+                    <option value="">Tất cả</option>
+                    <option value="active" {% if selected_active == "active" %}selected{% endif %}>
+                        Đang hoạt động
+                    </option>
+                    <option value="inactive" {% if selected_active == "inactive" %}selected{% endif %}>
+                        Ngừng hoạt động
+                    </option>
+                </select>
+            </div>
+        {% endif %}
+
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">Lọc dữ liệu</button>
+            <a href="{% url request.resolver_match.view_name %}" class="btn btn-secondary">
+                Xóa lọc
+            </a>
+        </div>
+    </form>
+</section>
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div>
+            <h2>Danh sách dữ liệu</h2>
+            <p>
+                {% if page_obj.paginator.count %}
+                    Tìm thấy {{ page_obj.paginator.count }} kết quả
+                {% else %}
+                    Chưa có dữ liệu
+                {% endif %}
+            </p>
+        </div>
+
+        <span class="admin-result-count">
+            {{ page_obj.paginator.count }} bản ghi
+        </span>
+    </div>
+
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 64px;">STT</th>
+
+                    {% if list_type == "faculty" %}
+                        <th>Mã khoa</th>
+                        <th>Tên khoa</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "class" %}
+                        <th>Mã lớp</th>
+                        <th>Khoa</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "student" %}
+                        <th>Mã sinh viên</th>
+                        <th>Sinh viên</th>
+                        <th>Lớp hành chính</th>
+                        <th>Khoa</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "lecturer" %}
+                        <th>Mã giảng viên</th>
+                        <th>Giảng viên</th>
+                        <th>Khoa</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "term" %}
+                        <th>Mã học kỳ</th>
+                        <th>Tên học kỳ</th>
+                        <th>Năm học</th>
+                        <th>Học kỳ</th>
+                        <th>Thời gian</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "course" %}
+                        <th>Mã học phần</th>
+                        <th>Tên học phần</th>
+                        <th>Số tín chỉ</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "classroom" %}
+                        <th>Mã phòng</th>
+                        <th>Tên phòng</th>
+                        <th>Tòa nhà</th>
+                        <th>Sức chứa</th>
+                        <th>Loại phòng</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "timetable" %}
+                        <th>Lớp học phần</th>
+                        <th>Phòng học</th>
+                        <th>Thứ</th>
+                        <th>Thời gian</th>
+                        <th>Thời hạn áp dụng</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+
+                    {% elif list_type == "class_session" %}
+                        <th>Lớp học phần</th>
+                        <th>Phòng học</th>
+                        <th>Ngày học</th>
+                        <th>Thời gian</th>
+                        <th>Chủ đề</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in page_obj %}
+                    <tr>
+                        <td>
+                            {{ page_obj.start_index|add:forloop.counter0 }}
+                        </td>
+
+                        {% if list_type == "faculty" %}
+                            <td><strong>{{ item.code }}</strong></td>
+                            <td>{{ item.name }}</td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="status-badge status-active">Hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <div class="table-actions">
+                                    <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                        Chỉnh sửa
+                                    </a>
+                                    <form
+                                        method="post"
+                                        action="{% url 'admin_panel:academic_toggle_status' 'faculty' item.pk %}"
+                                        class="inline-form"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái khoa này?');"
+                                    >
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                            {% if item.is_active %}Ngừng hoạt động{% else %}Kích hoạt{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+
+                        {% elif list_type == "class" %}
+                            <td><strong>{{ item.code }}</strong></td>
+                            <td>{{ item.faculty.code }} - {{ item.faculty.name }}</td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="status-badge status-active">Hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <div class="table-actions">
+                                    <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                        Chỉnh sửa
+                                    </a>
+                                    <form
+                                        method="post"
+                                        action="{% url 'admin_panel:academic_toggle_status' 'class' item.pk %}"
+                                        class="inline-form"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái lớp này?');"
+                                    >
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                            {% if item.is_active %}Ngừng hoạt động{% else %}Kích hoạt{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+
+                        {% elif list_type == "student" %}
+                            <td><strong>{{ item.student_code }}</strong></td>
+                            <td>
+                                <strong>{{ item.user.get_full_name|default:item.user.username }}</strong>
+                                <small class="table-subtext">{{ item.user.email }}</small>
+                            </td>
+                            <td>{{ item.academic_class.code|default:"Chưa phân lớp" }}</td>
+                            <td>{{ item.academic_class.faculty.name|default:"—" }}</td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+
+                        {% elif list_type == "lecturer" %}
+                            <td><strong>{{ item.lecturer_code }}</strong></td>
+                            <td>
+                                <strong>{{ item.user.get_full_name|default:item.user.username }}</strong>
+                                <small class="table-subtext">{{ item.user.email }}</small>
+                            </td>
+                            <td>{{ item.faculty.name }}</td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+
+                        {% elif list_type == "term" %}
+                            <td><strong>{{ item.code }}</strong></td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.academic_year }}</td>
+                            <td>
+                                {% if item.semester == "1" %}
+                                    Học kỳ 1
+                                {% elif item.semester == "2" %}
+                                    Học kỳ 2
+                                {% else %}
+                                    Học kỳ hè
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ item.start_date|date:"d/m/Y" }}
+                                –
+                                {{ item.end_date|date:"d/m/Y" }}
+                            </td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="status-badge status-active">Hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+
+                        {% elif list_type == "course" %}
+                            <td><strong>{{ item.code }}</strong></td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.credits }} tín chỉ</td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="status-badge status-active">Hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+
+                        {% elif list_type == "classroom" %}
+                            <td><strong>{{ item.code }}</strong></td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.building|default:"—" }}</td>
+                            <td>{{ item.capacity }} người</td>
+                            <td>{{ item.get_classroom_type_display }}</td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="status-badge status-active">Hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+
+                        {% elif list_type == "timetable" %}
+                            <td>
+                                <strong>{{ item.course_section.course.code }}</strong>
+                                <small>{{ item.course_section.course.name }}</small>
+                                <small>Lớp: {{ item.course_section.section_number }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ item.classroom.code }}</strong>
+                                <small>{{ item.classroom.name }}</small>
+                            </td>
+                            <td>{{ item.get_weekday_display }}</td>
+                            <td>
+                                {{ item.start_time|time:"H:i" }}
+                                –
+                                {{ item.end_time|time:"H:i" }}
+                            </td>
+                            <td>
+                                {{ item.effective_start|date:"d/m/Y" }}
+                                –
+                                {{ item.effective_end|date:"d/m/Y" }}
+                            </td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="status-badge status-active">Hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+
+                        {% elif list_type == "class_session" %}
+                            <td>
+                                <strong>{{ item.timetable.course_section.course.code }}</strong>
+                                <small>{{ item.timetable.course_section.course.name }}</small>
+                                <small>Lớp: {{ item.timetable.course_section.section_number }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ item.timetable.classroom.code }}</strong>
+                                <small>{{ item.timetable.classroom.name }}</small>
+                            </td>
+                            <td>{{ item.session_date|date:"d/m/Y" }}</td>
+                            <td>
+                                {{ item.timetable.start_time|time:"H:i" }}
+                                –
+                                {{ item.timetable.end_time|time:"H:i" }}
+                            </td>
+                            <td>{{ item.topic|default:"—" }}</td>
+                            <td>
+                                {{ item.get_status_display }}
+                            </td>
+                            <td class="text-right">
+                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    Chỉnh sửa
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="empty-table">
+                            <div class="empty-state">
+                                <strong>Không tìm thấy dữ liệu</strong>
+                                <p>Thử thay đổi từ khóa hoặc điều kiện lọc.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="admin-pagination" aria-label="Phân trang">
+            <div class="pagination-info">
+                Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </div>
+
+            <div class="pagination-actions">
+                {% if page_obj.has_previous %}
+                    <a
+                        href="{% querystring page=page_obj.previous_page_number %}"
+                        class="pagination-link"
+                        aria-label="Trang trước"
+                    >
+                        ← Trước
+                    </a>
+                {% else %}
+                    <span class="pagination-link disabled">← Trước</span>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                    <a
+                        href="{% querystring page=page_obj.next_page_number %}"
+                        class="pagination-link"
+                        aria-label="Trang tiếp theo"
+                    >
+                        Sau →
+                    </a>
+                {% else %}
+                    <span class="pagination-link disabled">Sau →</span>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

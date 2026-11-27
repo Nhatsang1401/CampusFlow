@@ -1,4 +1,3 @@
-
 import pytest
 from django.contrib.auth import get_user_model
 
@@ -51,9 +50,7 @@ class TestAttendanceNotificationIntegration:
 
         return user, profile, enrollment
 
-    def test_open_session_notifies_only_active_registered_students(
-        self, attendance_data
-    ):
+    def test_open_session_notifies_only_active_registered_students(self, attendance_data):
         student_user = attendance_data["student_user"]
 
         active_user, _, _ = self.create_additional_student(
@@ -84,17 +81,14 @@ class TestAttendanceNotificationIntegration:
         notifications = Notification.objects.all()
 
         assert notifications.count() == 2
-        assert set(
-            notifications.values_list("recipient_id", flat=True)
-        ) == {student_user.pk, active_user.pk}
+        assert set(notifications.values_list("recipient_id", flat=True)) == {
+            student_user.pk,
+            active_user.pk,
+        }
 
-        assert not notifications.filter(
-            recipient=inactive_user
-        ).exists()
+        assert not notifications.filter(recipient=inactive_user).exists()
 
-        assert not notifications.filter(
-            recipient=unregistered_user
-        ).exists()
+        assert not notifications.filter(recipient=unregistered_user).exists()
 
         assert token
         assert session.pk is not None
@@ -106,9 +100,7 @@ class TestAttendanceNotificationIntegration:
         assert audit.actor == attendance_data["lecturer_user"]
         assert audit.object_type == "AttendanceSession"
 
-    def test_close_session_notifies_registered_students_and_logs_audit(
-        self, attendance_data
-    ):
+    def test_close_session_notifies_registered_students_and_logs_audit(self, attendance_data):
         student_user = attendance_data["student_user"]
 
         active_user, _, _ = self.create_additional_student(
@@ -146,17 +138,14 @@ class TestAttendanceNotificationIntegration:
         notifications = Notification.objects.all()
 
         assert notifications.count() == 2
-        assert set(
-            notifications.values_list("recipient_id", flat=True)
-        ) == {student_user.pk, active_user.pk}
+        assert set(notifications.values_list("recipient_id", flat=True)) == {
+            student_user.pk,
+            active_user.pk,
+        }
 
-        assert not notifications.filter(
-            recipient=inactive_user
-        ).exists()
+        assert not notifications.filter(recipient=inactive_user).exists()
 
-        assert notifications.filter(
-            title="Phiên điểm danh đã đóng"
-        ).count() == 2
+        assert notifications.filter(title="Phiên điểm danh đã đóng").count() == 2
 
         audit = AuditLog.objects.get(
             action="attendance.session.closed",
@@ -166,9 +155,7 @@ class TestAttendanceNotificationIntegration:
         assert audit.actor == attendance_data["lecturer_user"]
         assert audit.object_type == "AttendanceSession"
 
-    def test_successful_check_in_creates_notification_and_audit(
-        self, attendance_data
-    ):
+    def test_successful_check_in_creates_notification_and_audit(self, attendance_data):
         session, token = create_attendance_session(
             class_session_id=attendance_data["class_session"].pk,
             user=attendance_data["lecturer_user"],
@@ -204,14 +191,9 @@ class TestAttendanceNotificationIntegration:
         assert audit.actor == attendance_data["student_user"]
         assert audit.object_type == "AttendanceRecord"
         assert audit.changes["attendance_session_id"] == session.pk
-        assert (
-            audit.changes["student_profile_id"]
-            == attendance_data["student_profile"].pk
-        )
+        assert audit.changes["student_profile_id"] == attendance_data["student_profile"].pk
 
-    def test_duplicate_check_in_does_not_create_extra_events(
-        self, attendance_data
-    ):
+    def test_duplicate_check_in_does_not_create_extra_events(self, attendance_data):
         _, token = create_attendance_session(
             class_session_id=attendance_data["class_session"].pk,
             user=attendance_data["lecturer_user"],
@@ -238,9 +220,7 @@ class TestAttendanceNotificationIntegration:
         assert Notification.objects.count() == notification_count
         assert AuditLog.objects.count() == audit_count
 
-    def test_invalid_check_in_does_not_create_notification_or_audit(
-        self, attendance_data
-    ):
+    def test_invalid_check_in_does_not_create_notification_or_audit(self, attendance_data):
         from django.core.exceptions import ValidationError
 
         with pytest.raises(ValidationError):
@@ -253,9 +233,7 @@ class TestAttendanceNotificationIntegration:
         assert Notification.objects.count() == 0
         assert AuditLog.objects.count() == 0
 
-    def test_unauthorized_lecturer_cannot_create_audit_or_notification(
-        self, attendance_data
-    ):
+    def test_unauthorized_lecturer_cannot_create_audit_or_notification(self, attendance_data):
         from django.core.exceptions import ValidationError
 
         with pytest.raises(ValidationError):

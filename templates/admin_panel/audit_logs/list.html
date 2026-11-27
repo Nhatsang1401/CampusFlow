@@ -1,0 +1,96 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ page_title }} | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <span class="eyebrow">SYSTEM SECURITY</span>
+    <h1>{{ page_title }}</h1>
+    <p>Tra cứu lịch sử thao tác của người dùng trong hệ thống.</p>
+</div>
+
+<section class="admin-panel">
+    <form method="get" class="admin-filter-form">
+        <input
+            type="search"
+            name="q"
+            value="{{ query }}"
+            placeholder="Người thực hiện, nội dung, mã đối tượng..."
+            aria-label="Tìm kiếm nhật ký"
+        >
+
+        <select name="action" aria-label="Lọc theo hành động">
+            <option value="">Tất cả hành động</option>
+            {% for value in actions %}
+                <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="object_type" aria-label="Lọc theo loại đối tượng">
+            <option value="">Tất cả đối tượng</option>
+            {% for value in object_types %}
+                <option value="{{ value }}" {% if selected_object_type == value %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button class="admin-button primary" type="submit">Lọc</button>
+        <a class="admin-button secondary" href="{% url 'admin_panel:audit_log_list' %}">
+            Xóa lọc
+        </a>
+    </form>
+</section>
+
+<section class="admin-panel">
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Người thực hiện</th>
+                    <th>Hành động</th>
+                    <th>Đối tượng</th>
+                    <th>Mô tả</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                    <tr>
+                        <td>{{ item.created_at|date:"d/m/Y H:i:s" }}</td>
+                        <td>{{ item.actor_label|default:"Hệ thống" }}</td>
+                        <td><code>{{ item.action }}</code></td>
+                        <td>
+                            {{ item.object_type }}
+                            <small>#{{ item.object_id }}</small>
+                        </td>
+                        <td>{{ item.description|default:"—" }}</td>
+                        <td>{{ item.ip_address|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="admin-empty">
+                            Chưa có nhật ký phù hợp.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="admin-pagination" aria-label="Phân trang">
+            <span>Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_previous %}
+                <a href="{% querystring page=page_obj.previous_page_number %}">← Trước</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="{% querystring page=page_obj.next_page_number %}">Sau →</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

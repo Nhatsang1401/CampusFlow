@@ -1,4 +1,3 @@
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -29,9 +28,7 @@ def notification_client():
 
 @pytest.mark.django_db
 class TestNotificationAPI:
-    def test_user_only_sees_own_notifications(
-        self, notification_users, notification_client
-    ):
+    def test_user_only_sees_own_notifications(self, notification_users, notification_client):
         user1, user2 = notification_users
 
         own_notification = Notification.objects.create(
@@ -46,9 +43,7 @@ class TestNotificationAPI:
         )
 
         notification_client.force_authenticate(user=user1)
-        response = notification_client.get(
-            reverse("core:notification-list")
-        )
+        response = notification_client.get(reverse("core:notification-list"))
 
         assert response.status_code == 200
 
@@ -58,12 +53,8 @@ class TestNotificationAPI:
         assert own_notification.id in returned_ids
         assert len(results) == 1
 
-    def test_anonymous_user_cannot_list_notifications(
-        self, notification_client
-    ):
-        response = notification_client.get(
-            reverse("core:notification-list")
-        )
+    def test_anonymous_user_cannot_list_notifications(self, notification_client):
+        response = notification_client.get(reverse("core:notification-list"))
 
         assert response.status_code in (401, 403)
 
@@ -89,9 +80,7 @@ class TestNotificationAPI:
         )
 
         notification_client.force_authenticate(user=user1)
-        response = notification_client.get(
-            reverse("core:notification-unread-count")
-        )
+        response = notification_client.get(reverse("core:notification-unread-count"))
 
         assert response.status_code == 200
         assert response.data["unread_count"] == 2
@@ -121,16 +110,12 @@ class TestNotificationAPI:
 
         assert response.status_code == 200
 
-        returned_ids = [
-            item["id"] for item in response.data["results"]
-        ]
+        returned_ids = [item["id"] for item in response.data["results"]]
 
         assert unread.id in returned_ids
         assert read.id not in returned_ids
 
-    def test_user_can_mark_own_notification_as_read(
-        self, notification_users, notification_client
-    ):
+    def test_user_can_mark_own_notification_as_read(self, notification_users, notification_client):
         user1, _ = notification_users
 
         notification = Notification.objects.create(
@@ -140,9 +125,7 @@ class TestNotificationAPI:
         )
 
         notification_client.force_authenticate(user=user1)
-        response = notification_client.post(
-            f"/api/core/notifications/{notification.pk}/read/"
-        )
+        response = notification_client.post(f"/api/core/notifications/{notification.pk}/read/")
 
         assert response.status_code == 200
 
@@ -162,18 +145,14 @@ class TestNotificationAPI:
         )
 
         notification_client.force_authenticate(user=user1)
-        response = notification_client.post(
-            f"/api/core/notifications/{notification.pk}/read/"
-        )
+        response = notification_client.post(f"/api/core/notifications/{notification.pk}/read/")
 
         assert response.status_code == 404
 
         notification.refresh_from_db()
         assert notification.is_read is False
 
-    def test_user_can_mark_all_notifications_as_read(
-        self, notification_users, notification_client
-    ):
+    def test_user_can_mark_all_notifications_as_read(self, notification_users, notification_client):
         user1, user2 = notification_users
 
         Notification.objects.create(
@@ -193,15 +172,16 @@ class TestNotificationAPI:
         )
 
         notification_client.force_authenticate(user=user1)
-        response = notification_client.post(
-            "/api/core/notifications/read-all/"
-        )
+        response = notification_client.post("/api/core/notifications/read-all/")
 
         assert response.status_code == 200
-        assert Notification.objects.filter(
-            recipient=user1,
-            is_read=False,
-        ).count() == 0
+        assert (
+            Notification.objects.filter(
+                recipient=user1,
+                is_read=False,
+            ).count()
+            == 0
+        )
 
         other_notification.refresh_from_db()
         assert other_notification.is_read is False

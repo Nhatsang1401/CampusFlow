@@ -40,4 +40,8 @@ urlpatterns = [
         include("apps.core.urls"),
     ),
     path("dashboard/", include("apps.dashboards.urls")),
+    path(
+        "quan-tri/",
+        include("apps.dashboards.admin_urls"),
+    ),
 ]

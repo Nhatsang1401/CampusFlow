@@ -30,10 +30,10 @@ class AuthenticationViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
-
         self.assertRedirects(
             response,
-            reverse("accounts:profile"),
+            reverse("dashboards:index"),
+            fetch_redirect_response=False,
         )
 
     def test_login_with_invalid_password(self):
@@ -68,9 +68,11 @@ class AuthenticationViewTests(TestCase):
 
         response = self.client.get(reverse("accounts:login"))
 
+        self.assertEqual(response.status_code, 302)
         self.assertRedirects(
             response,
-            reverse("accounts:profile"),
+            reverse("dashboards:index"),
+            fetch_redirect_response=False,
         )
 
     def test_logout_requires_post(self):

@@ -1,0 +1,130 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Quản lý lớp học phần | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ACADEMIC MANAGEMENT</span>
+        <h1>Quản lý lớp học phần</h1>
+        <p>Quản lý lớp mở theo học kỳ, giảng viên và sức chứa.</p>
+    </div>
+    <a class="admin-button admin-button-primary"
+       href="{% url 'admin_panel:course_section_create' %}">
+        + Thêm lớp học phần
+    </a>
+</div>
+
+<section class="admin-panel">
+    <form method="get" class="admin-filter-form">
+        <input type="search" name="q" value="{{ query }}"
+               placeholder="Mã lớp, học phần hoặc giảng viên">
+
+        <select name="term">
+            <option value="">Tất cả học kỳ</option>
+            {% for item in terms %}
+                <option value="{{ item.pk }}"
+                    {% if selected_term == item.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ item.name }} ({{ item.academic_year }})
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="course">
+            <option value="">Tất cả học phần</option>
+            {% for item in courses %}
+                <option value="{{ item.pk }}"
+                    {% if selected_course == item.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ item.code }} - {{ item.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="lecturer">
+            <option value="">Tất cả giảng viên</option>
+            {% for item in lecturers %}
+                <option value="{{ item.pk }}"
+                    {% if selected_lecturer == item.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ item.lecturer_code }} - {{ item.user.get_full_name|default:item.user.username }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="active">
+            <option value="">Mọi trạng thái</option>
+            <option value="active" {% if selected_active == "active" %}selected{% endif %}>
+                Đang hoạt động
+            </option>
+            <option value="inactive" {% if selected_active == "inactive" %}selected{% endif %}>
+                Ngừng hoạt động
+            </option>
+        </select>
+
+        <button class="admin-button admin-button-primary" type="submit">
+            Lọc dữ liệu
+        </button>
+        <a class="admin-button" href="{% url 'admin_panel:course_section_list' %}">
+            Xóa lọc
+        </a>
+    </form>
+
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Mã lớp</th>
+                <th>Học phần</th>
+                <th>Học kỳ</th>
+                <th>Giảng viên</th>
+                <th>Đăng ký</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in page_obj %}
+                <tr>
+                    <td><strong>{{ item.code }}</strong></td>
+                    <td>{{ item.course.code }} - {{ item.course.name }}</td>
+                    <td>{{ item.term.name }}</td>
+                    <td>
+                        {{ item.lecturer.user.get_full_name|default:item.lecturer.user.username }}
+                    </td>
+                    <td>
+                        <strong>{{ item.enrolled_count }}/{{ item.max_students }}</strong>
+                        <small>Còn {{ item.available_seats }} chỗ</small>
+                    </td>
+                    <td>
+                        {% if item.is_active %}
+                            <span class="status-badge status-active">Hoạt động</span>
+                        {% else %}
+                            <span class="status-badge status-inactive">Ngừng</span>
+                        {% endif %}
+                        {% if item.registration_open %}
+                            <small>Đang mở đăng ký</small>
+                        {% else %}
+                            <small>Đã đóng đăng ký</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a class="admin-button"
+                           href="{% url 'admin_panel:course_section_update' item.pk %}">
+                            Chỉnh sửa
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="admin-empty">
+                        Không tìm thấy lớp học phần.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include "admin_panel/partials/pagination.html" %}
+</section>
+{% endblock %}

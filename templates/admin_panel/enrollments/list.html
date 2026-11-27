@@ -1,0 +1,128 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Quản lý đăng ký học phần | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ACADEMIC MANAGEMENT</span>
+        <h1>Quản lý đăng ký học phần</h1>
+        <p>Theo dõi sinh viên đăng ký và quản lý trạng thái đăng ký.</p>
+    </div>
+</div>
+
+<section class="admin-panel">
+    <form method="get" class="admin-filter-form">
+        <input type="search" name="q" value="{{ query }}"
+               placeholder="Mã sinh viên, tên hoặc mã lớp học phần">
+
+        <select name="section">
+            <option value="">Tất cả lớp học phần</option>
+            {% for item in sections %}
+                <option value="{{ item.pk }}"
+                    {% if selected_section == item.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ item.code }} - {{ item.course.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="status">
+            <option value="">Tất cả trạng thái</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}"
+                    {% if selected_status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button class="admin-button admin-button-primary" type="submit">
+            Lọc dữ liệu
+        </button>
+        <a class="admin-button" href="{% url 'admin_panel:enrollment_list' %}">
+            Xóa lọc
+        </a>
+    </form>
+
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Sinh viên</th>
+                <th>Lớp hành chính</th>
+                <th>Lớp học phần</th>
+                <th>Ngày đăng ký</th>
+                <th>Trạng thái</th>
+                <th>Cập nhật trạng thái</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in page_obj %}
+                <tr>
+                    <td>
+                        <strong>{{ item.student.student_code }}</strong>
+                        <small>
+                            {{ item.student.user.get_full_name|default:item.student.user.username }}
+                        </small>
+                    </td>
+                    <td>{{ item.student.academic_class.code }}</td>
+                    <td>
+                        <strong>{{ item.course_section.code }}</strong>
+                        <small>{{ item.course_section.course.name }}</small>
+                    </td>
+                    <td>{{ item.registered_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {{ item.get_status_display }}
+                    </td>
+                    <td>
+                        {% if item.status != "completed" %}
+                            <form method="post"
+                                  action="{% url 'admin_panel:enrollment_change_status' item.pk %}"
+                                  class="inline-status-form">
+                                {% csrf_token %}
+
+                                {% if item.status == "registered" %}
+                                    <button class="admin-button"
+                                            type="submit"
+                                            name="status"
+                                            value="cancelled"
+                                            onclick="return confirm('Bạn chắc chắn muốn hủy đăng ký này?')">
+                                        Hủy đăng ký
+                                    </button>
+                                    <button class="admin-button admin-button-primary"
+                                            type="submit"
+                                            name="status"
+                                            value="completed"
+                                            onclick="return confirm('Xác nhận sinh viên đã hoàn thành học phần?')">
+                                        Hoàn thành
+                                    </button>
+                                {% elif item.status == "cancelled" %}
+                                    <button class="admin-button admin-button-primary"
+                                            type="submit"
+                                            name="status"
+                                            value="registered"
+                                            onclick="return confirm('Đăng ký lại cho sinh viên này?')">
+                                        Đăng ký lại
+                                    </button>
+                                {% endif %}
+                            </form>
+                        {% else %}
+                            <small>Đã hoàn thành</small>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="admin-empty">
+                        Chưa có dữ liệu đăng ký học phần.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include "admin_panel/partials/pagination.html" %}
+</section>
+{% endblock %}

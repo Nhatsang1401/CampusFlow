@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils import timezone
@@ -31,9 +30,7 @@ def get_admin_dashboard_data():
         "total_faculties": Faculty.objects.count(),
         "total_classes": AcademicClass.objects.count(),
         "total_course_sections": CourseSection.objects.count(),
-        "active_course_sections": CourseSection.objects.filter(
-            is_active=True
-        ).count(),
+        "active_course_sections": CourseSection.objects.filter(is_active=True).count(),
         "total_terms": AcademicTerm.objects.count(),
         "total_class_sessions": ClassSession.objects.count(),
         "upcoming_sessions": ClassSession.objects.filter(
@@ -45,9 +42,7 @@ def get_admin_dashboard_data():
         ).count(),
         "total_attendance_records": AttendanceRecord.objects.count(),
         "total_audit_logs": AuditLog.objects.count(),
-        "recent_audit_logs": AuditLog.objects.select_related(
-            "actor"
-        ).order_by("-created_at")[:8],
+        "recent_audit_logs": AuditLog.objects.select_related("actor").order_by("-created_at")[:8],
     }
 
 
@@ -76,10 +71,15 @@ def get_lecturer_dashboard_data(user):
 
     section_ids = sections.values_list("pk", flat=True)
 
-    total_students = Enrollment.objects.filter(
-        course_section_id__in=section_ids,
-        status=EnrollmentStatus.REGISTERED,
-    ).values("student_id").distinct().count()
+    total_students = (
+        Enrollment.objects.filter(
+            course_section_id__in=section_ids,
+            status=EnrollmentStatus.REGISTERED,
+        )
+        .values("student_id")
+        .distinct()
+        .count()
+    )
 
     sessions = list(
         ClassSession.objects.filter(

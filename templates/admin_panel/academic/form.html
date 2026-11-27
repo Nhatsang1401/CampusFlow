@@ -1,0 +1,49 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}{{ page_title }} | CampusFlow{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <span class="eyebrow">ACADEMIC MANAGEMENT</span>
+    <h1>{{ page_title }}</h1>
+    <p>Nhập thông tin chính xác trước khi lưu.</p>
+</div>
+
+<section class="admin-panel form-panel">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="form-field {% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
+                {% if field.field.widget.input_type == "checkbox" %}
+                    <label class="checkbox-label">
+                        {{ field }} {{ field.label }}
+                    </label>
+                {% else %}
+                    {{ field.label_tag }}
+                    {{ field }}
+                {% endif %}
+
+                {% if field.help_text %}
+                    <small class="field-help">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <small class="field-error">{{ error }}</small>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a class="admin-button secondary" href="{% url back_url %}">Quay lại</a>
+            <button class="admin-button primary" type="submit">Lưu thông tin</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

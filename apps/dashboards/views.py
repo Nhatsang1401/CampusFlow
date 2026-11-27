@@ -1,4 +1,3 @@
-
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET
@@ -13,11 +12,7 @@ from .services import (
 
 
 def administrator_required(user):
-    return (
-        user.is_authenticated
-        and user.is_active
-        and user.is_superuser
-    )
+    return user.is_authenticated and user.is_active and user.is_superuser
 
 
 def lecturer_required(user):

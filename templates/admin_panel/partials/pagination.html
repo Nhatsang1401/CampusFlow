@@ -1,0 +1,20 @@
+
+{% if page_obj.has_other_pages %}
+<nav class="admin-pagination" aria-label="Phân trang">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}&status={{ selected_status|urlencode }}&section={{ selected_section|urlencode }}">
+            ← Trước
+        </a>
+    {% endif %}
+
+    <span>
+        Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}&status={{ selected_status|urlencode }}&section={{ selected_section|urlencode }}">
+            Sau →
+        </a>
+    {% endif %}
+</nav>
+{% endif %}

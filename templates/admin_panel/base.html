@@ -1,0 +1,247 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="CampusFlow Administration - Hệ thống quản lý đào tạo">
+
+    <title>{% block title %}Quản trị | CampusFlow{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+<div class="admin-layout">
+
+    <aside class="admin-sidebar" id="adminSidebar">
+        <a href="{% url 'admin_panel:dashboard' %}" class="admin-brand">
+            <span class="brand-icon">C</span>
+            <span class="brand-name">CampusFlow</span>
+        </a>
+
+        <!-- Tổng quan -->
+        <div class="sidebar-caption">TỔNG QUAN</div>
+
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+            href="{% url 'admin_panel:dashboard' %}"
+        >
+            <span aria-hidden="true">▦</span>
+            Dashboard
+        </a>
+
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin' %}active{% endif %}"
+            href="{% url 'dashboards:admin' %}"
+        >
+            <span aria-hidden="true">◫</span>
+            Dashboard thống kê
+        </a>
+
+        <!-- Quản lý hệ thống -->
+        <div class="sidebar-caption">QUẢN LÝ HỆ THỐNG</div>
+
+        <a
+            class="sidebar-link {% if 'user_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:user_list' %}"
+        >
+            <span aria-hidden="true">♙</span>
+            Tài khoản
+        </a>
+
+        <a
+            class="sidebar-link {% if 'course_section_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:course_section_list' %}"
+        >
+            <span aria-hidden="true">▤</span>
+            Lớp học phần
+        </a>
+
+        <a
+            class="sidebar-link {% if 'enrollment_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:enrollment_list' %}"
+        >
+            <span aria-hidden="true">☷</span>
+            Đăng ký học phần
+        </a>
+
+        <!-- Quản lý đào tạo -->
+        <div class="sidebar-caption">QUẢN LÝ ĐÀO TẠO</div>
+
+        <a
+            class="sidebar-link {% if 'faculty_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:faculty_list' %}"
+        >
+            <span aria-hidden="true">▤</span>
+            Khoa
+        </a>
+
+        <a
+            class="sidebar-link {% if 'class_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:class_list' %}"
+        >
+            <span aria-hidden="true">▣</span>
+            Lớp hành chính
+        </a>
+
+        <a
+            class="sidebar-link {% if 'student_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:student_list' %}"
+        >
+            <span aria-hidden="true">♟</span>
+            Sinh viên
+        </a>
+
+        <a
+            class="sidebar-link {% if 'lecturer_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:lecturer_list' %}"
+        >
+            <span aria-hidden="true">♜</span>
+            Giảng viên
+        </a>
+
+        <a
+            class="sidebar-link {% if 'term_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:term_list' %}"
+        >
+            <span aria-hidden="true">▦</span>
+            Học kỳ
+        </a>
+
+        <a
+            class="sidebar-link {% if 'course_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:course_list' %}"
+        >
+            <span aria-hidden="true">▧</span>
+            Học phần
+        </a>
+        <a
+            class="sidebar-link {% if 'classroom_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:classroom_list' %}"
+        >
+            <span>▦</span>
+            Phòng học
+        </a>
+
+        <a
+            class="sidebar-link {% if 'timetable_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:timetable_list' %}"
+        >
+            <span>◷</span>
+            Thời khóa biểu
+        </a>
+
+        <a
+            class="sidebar-link {% if 'class_session_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:class_session_list' %}"
+        >
+            <span>▣</span>
+            Buổi học
+        </a>
+
+        <!-- Tài khoản quản trị -->
+        <div class="sidebar-caption">HỆ THỐNG</div>
+        <a
+            class="sidebar-link {% if 'audit_log_' in request.resolver_match.url_name %}active{% endif %}"
+            href="{% url 'admin_panel:audit_log_list' %}"
+        >
+            <span>◉</span>
+            Nhật ký hệ thống
+        </a>
+        <a
+            class="sidebar-link"
+            href="{% url 'accounts:profile' %}"
+        >
+            <span aria-hidden="true">◎</span>
+            Hồ sơ cá nhân
+        </a>
+
+        <a
+            class="sidebar-link"
+            href="/admin/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            <span aria-hidden="true">⚙</span>
+            Django Admin
+        </a>
+
+        <form
+            method="post"
+            action="{% url 'accounts:logout' %}"
+            class="sidebar-logout"
+        >
+            {% csrf_token %}
+            <button type="submit" class="sidebar-link">
+                <span aria-hidden="true">⇥</span>
+                Đăng xuất
+            </button>
+        </form>
+    </aside>
+
+    <main class="admin-main">
+
+        <header class="admin-topbar">
+            <button
+                type="button"
+                class="sidebar-toggle"
+                id="sidebarToggle"
+                aria-label="Mở hoặc đóng menu"
+                aria-controls="adminSidebar"
+                aria-expanded="true"
+            >
+                ☰
+            </button>
+
+            <div class="topbar-spacer"></div>
+
+            <div class="admin-account">
+                <span class="admin-avatar">
+                    {{ request.user.first_name|default:request.user.username|first|upper }}
+                </span>
+
+                <div class="admin-account-info">
+                    <strong>
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </strong>
+                    <small>Quản trị viên</small>
+                </div>
+            </div>
+        </header>
+
+        <section class="admin-content">
+
+            {% if messages %}
+                <div class="admin-messages" aria-live="polite">
+                    {% for message in messages %}
+                        <div
+                            class="admin-message {{ message.tags }}"
+                            role="status"
+                        >
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+
+        </section>
+
+        <footer class="admin-footer">
+            <span>CampusFlow Administration</span>
+            <span>© {% now "Y" %} CampusFlow</span>
+        </footer>
+
+    </main>
+</div>
+
+<script src="{% static 'js/admin.js' %}" defer></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

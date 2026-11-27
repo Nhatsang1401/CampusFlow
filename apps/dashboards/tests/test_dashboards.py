@@ -1,4 +1,3 @@
-
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -37,9 +36,7 @@ def dashboard_users(db):
 
 @pytest.mark.django_db
 class TestDashboardRouting:
-    def test_admin_is_redirected_to_admin_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_admin_is_redirected_to_admin_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["admin"])
 
         response = client.get(reverse("dashboards:index"))
@@ -47,9 +44,7 @@ class TestDashboardRouting:
         assert response.status_code == 302
         assert response.url == reverse("dashboards:admin")
 
-    def test_lecturer_is_redirected_to_lecturer_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_lecturer_is_redirected_to_lecturer_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["lecturer"])
 
         response = client.get(reverse("dashboards:index"))
@@ -57,9 +52,7 @@ class TestDashboardRouting:
         assert response.status_code == 302
         assert response.url == reverse("dashboards:lecturer")
 
-    def test_student_is_redirected_to_student_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_student_is_redirected_to_student_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["student"])
 
         response = client.get(reverse("dashboards:index"))
@@ -76,9 +69,7 @@ class TestDashboardRouting:
 
 @pytest.mark.django_db
 class TestRoleBasedDashboards:
-    def test_admin_can_access_admin_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_admin_can_access_admin_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["admin"])
 
         response = client.get(reverse("dashboards:admin"))
@@ -88,9 +79,7 @@ class TestRoleBasedDashboards:
         assert response.context["total_students"] == 0
         assert response.context["total_lecturers"] == 0
 
-    def test_lecturer_can_access_lecturer_dashboard_without_profile(
-        self, client, dashboard_users
-    ):
+    def test_lecturer_can_access_lecturer_dashboard_without_profile(self, client, dashboard_users):
         client.force_login(dashboard_users["lecturer"])
 
         response = client.get(reverse("dashboards:lecturer"))
@@ -99,9 +88,7 @@ class TestRoleBasedDashboards:
         assert response.context["has_profile"] is False
         assert response.context["total_sections"] == 0
 
-    def test_student_can_access_student_dashboard_without_profile(
-        self, client, dashboard_users
-    ):
+    def test_student_can_access_student_dashboard_without_profile(self, client, dashboard_users):
         client.force_login(dashboard_users["student"])
 
         response = client.get(reverse("dashboards:student"))
@@ -110,9 +97,7 @@ class TestRoleBasedDashboards:
         assert response.context["has_profile"] is False
         assert response.context["total_sections"] == 0
 
-    def test_student_cannot_access_admin_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_student_cannot_access_admin_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["student"])
 
         response = client.get(reverse("dashboards:admin"))
@@ -120,9 +105,7 @@ class TestRoleBasedDashboards:
         assert response.status_code == 302
         assert reverse("accounts:login") in response.url
 
-    def test_lecturer_cannot_access_student_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_lecturer_cannot_access_student_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["lecturer"])
 
         response = client.get(reverse("dashboards:student"))
@@ -130,9 +113,7 @@ class TestRoleBasedDashboards:
         assert response.status_code == 302
         assert reverse("accounts:login") in response.url
 
-    def test_admin_cannot_access_lecturer_dashboard(
-        self, client, dashboard_users
-    ):
+    def test_admin_cannot_access_lecturer_dashboard(self, client, dashboard_users):
         client.force_login(dashboard_users["admin"])
 
         response = client.get(reverse("dashboards:lecturer"))
