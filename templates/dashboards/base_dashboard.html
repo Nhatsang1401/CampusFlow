@@ -1,309 +1,331 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CampusFlow - Hệ thống quản lý học tập.">
-    <title>{% block title %}Dashboard | CampusFlow{% endblock %}</title>
+    <meta name="theme-color" content="#101c36">
+    <meta name="description" content="CampusFlow - Nền tảng quản lý học tập và điểm danh thông minh.">
+
+    <title>{% block title %}CampusFlow{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
-    <style>
-        :root {
-            --navy: #14233f;
-            --navy-light: #1d3358;
-            --blue: #2563eb;
-            --bg: #f4f7fb;
-            --surface: #ffffff;
-            --text: #172033;
-            --muted: #64748b;
-            --border: #e5eaf1;
-            --success: #15803d;
-            --radius: 14px;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: "Be Vietnam Pro", sans-serif;
-            font-size: 14px;
-        }
-
-        a { color: inherit; text-decoration: none; }
-
-        .layout {
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 250px minmax(0, 1fr);
-        }
-
-        .sidebar {
-            background: var(--navy);
-            color: #e2e8f0;
-            padding: 26px 18px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 10px 30px;
-            font-size: 21px;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .brand-mark {
-            width: 38px;
-            height: 38px;
-            display: grid;
-            place-items: center;
-            border-radius: 11px;
-            background: var(--blue);
-            color: #fff;
-        }
-
-        .nav-label {
-            margin: 12px 10px;
-            color: #94a3b8;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .nav-link {
-            display: block;
-            padding: 12px 13px;
-            margin: 5px 0;
-            border-radius: 9px;
-            color: #cbd5e1;
-            transition: background .2s, color .2s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: var(--navy-light);
-            color: #fff;
-        }
-
-        .main { min-width: 0; }
-
-        .topbar {
-            min-height: 76px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            padding: 16px 30px;
-        }
-
-        .topbar-title { font-size: 17px; font-weight: 700; }
-
-        .user-info {
-            color: var(--muted);
-            text-align: right;
-        }
-
-        .user-info strong {
-            display: block;
-            color: var(--text);
-        }
-
-        .content {
-            max-width: 1500px;
-            margin: auto;
-            padding: 30px;
-        }
-
-        .page-heading { margin-bottom: 24px; }
-
-        .page-heading h1 {
-            margin: 0 0 7px;
-            font-size: 25px;
-        }
-
-        .page-heading p {
-            margin: 0;
-            color: var(--muted);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card, .panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-        }
-
-        .stat-label { color: var(--muted); font-size: 13px; }
-
-        .stat-value {
-            margin-top: 12px;
-            font-size: 29px;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .panel { margin-bottom: 20px; }
-
-        .panel h2 {
-            margin: 0 0 18px;
-            font-size: 16px;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        .data-table th, .data-table td {
-            padding: 13px 10px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        .data-table th {
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .data-table tr:last-child td { border-bottom: 0; }
-
-        .muted { color: var(--muted); }
-
-        .empty-state {
-            padding: 30px 16px;
-            color: var(--muted);
-            text-align: center;
-        }
-
-        .profile-warning {
-            padding: 15px 18px;
-            margin-bottom: 20px;
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-            border-radius: 10px;
-            color: #9a3412;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 5px 9px;
-            border-radius: 20px;
-            background: #dcfce7;
-            color: var(--success);
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .footer {
-            padding: 18px 30px;
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        @media (max-width: 1100px) {
-            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-
-        @media (max-width: 760px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { padding: 15px; }
-            .brand { padding-bottom: 12px; }
-            .nav-label { display: none; }
-            .sidebar nav { display: flex; flex-wrap: wrap; gap: 5px; }
-            .nav-link { margin: 0; padding: 9px 11px; }
-            .content { padding: 20px 15px; }
-            .topbar { padding: 14px 16px; }
-            .stats-grid { gap: 10px; }
-            .stat-card { padding: 15px; }
-            .stat-value { font-size: 24px; }
-            .table-wrap { overflow-x: auto; }
-            .data-table { min-width: 600px; }
-        }
-
-        @media (max-width: 420px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .page-heading h1 { font-size: 21px; }
-        }
-    </style>
-
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
-<div class="layout">
-    <aside class="sidebar">
-        <a class="brand" href="{% url 'dashboards:index' %}">
-            <span class="brand-mark">C</span>
-            <span>CampusFlow</span>
+
+<body class="dashboard-body">
+<div class="app-shell">
+
+    <div class="sidebar-backdrop" data-sidebar-close></div>
+
+    <aside class="app-sidebar" id="appSidebar">
+        <a class="brand" href="{% url 'dashboards:index' %}" aria-label="CampusFlow trang chủ">
+            <span class="brand-symbol">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 9.5 12 4l9 5.5-9 5.5L3 9.5Z"
+                          stroke="currentColor" stroke-width="1.8"
+                          stroke-linejoin="round"/>
+                    <path d="M6.5 12v4.2c3.5 2.5 7.5 2.5 11 0V12"
+                          stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round"/>
+                    <path d="M21 10v6" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <span class="brand-copy">
+                <strong>CampusFlow</strong>
+                <small>UNIVERSITY PLATFORM</small>
+            </span>
         </a>
 
-        <div class="nav-label">Không gian làm việc</div>
-        <nav>
-            <a class="nav-link active" href="{% url 'dashboards:index' %}">
-                Tổng quan
+        <div class="sidebar-profile">
+            <div class="sidebar-avatar">
+                {{ request.user.get_full_name|default:request.user.username|first|upper }}
+            </div>
+            <div class="sidebar-profile-info">
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                <span>{{ request.user.display_role }}</span>
+            </div>
+        </div>
+
+        <div class="sidebar-section-label">KHÔNG GIAN LÀM VIỆC</div>
+
+        <nav class="sidebar-nav" aria-label="Điều hướng chính">
+
+            <a class="sidebar-link active" href="{% url 'dashboards:index' %}">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="3.5" y="3.5" width="7" height="7" rx="1.5"
+                        stroke="currentColor" stroke-width="1.7"/>
+                    <rect x="13.5" y="3.5" width="7" height="7" rx="1.5"
+                        stroke="currentColor" stroke-width="1.7"/>
+                    <rect x="3.5" y="13.5" width="7" height="7" rx="1.5"
+                        stroke="currentColor" stroke-width="1.7"/>
+                    <rect x="13.5" y="13.5" width="7" height="7" rx="1.5"
+                        stroke="currentColor" stroke-width="1.7"/>
+                </svg>
+                <span>Tổng quan</span>
+                <span class="nav-active-indicator"></span>
             </a>
-            <a class="nav-link" href="{% url 'accounts:profile' %}">
-                Hồ sơ cá nhân
+
+            {% if request.user.is_superuser %}
+
+                <a class="sidebar-link" href="{% url 'admin_panel:class_session_list' %}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2.5"
+                            stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M16 3v4M8 3v4M3 10h18"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round"/>
+                    </svg>
+                    <span>Buổi học</span>
+                </a>
+
+                <a class="sidebar-link" href="{% url 'admin_panel:course_section_list' %}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"
+                            stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"
+                            stroke="currentColor" stroke-width="1.7"/>
+                    </svg>
+                    <span>Lớp học phần</span>
+                </a>
+
+                <a class="sidebar-link" href="{% url 'admin_panel:audit_log_list' %}">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 19V5M4 19h17"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round"/>
+                        <path d="m7 15 4-4 3 2 6-7"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Nhật ký hoạt động</span>
+                </a>
+
+            {% elif request.user.role == "lecturer" %}
+
+                <a class="sidebar-link" href="#schedule">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2.5"
+                            stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M16 3v4M8 3v4M3 10h18"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round"/>
+                    </svg>
+                    <span>Lịch giảng dạy</span>
+                </a>
+
+                <a class="sidebar-link" href="#courses">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"
+                            stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"
+                            stroke="currentColor" stroke-width="1.7"/>
+                    </svg>
+                    <span>Học phần</span>
+                </a>
+
+                <a class="sidebar-link" href="#activity">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 19V5M4 19h17"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round"/>
+                        <path d="m7 15 4-4 3 2 6-7"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Hoạt động</span>
+                </a>
+
+            {% elif request.user.role == "student" %}
+
+                <a class="sidebar-link" href="#schedule">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2.5"
+                            stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M16 3v4M8 3v4M3 10h18"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round"/>
+                    </svg>
+                    <span>Thời khóa biểu</span>
+                </a>
+
+                <a class="sidebar-link" href="#courses">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"
+                            stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"
+                            stroke="currentColor" stroke-width="1.7"/>
+                    </svg>
+                    <span>Học phần</span>
+                </a>
+
+                <a class="sidebar-link" href="#activity">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 19V5M4 19h17"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round"/>
+                        <path d="m7 15 4-4 3 2 6-7"
+                            stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Lịch sử điểm danh</span>
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-section-label sidebar-section-secondary">TÀI KHOẢN</div>
+
+        <nav class="sidebar-nav" aria-label="Tài khoản">
+            <a class="sidebar-link" href="{% url 'accounts:profile' %}">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="8" r="4"
+                            stroke="currentColor" stroke-width="1.7"/>
+                    <path d="M4 21a8 8 0 0 1 16 0"
+                          stroke="currentColor" stroke-width="1.7"
+                          stroke-linecap="round"/>
+                </svg>
+                <span>Hồ sơ cá nhân</span>
             </a>
-            <a class="nav-link" href="{% url 'accounts:password_change' %}">
-                Đổi mật khẩu
+
+            <a class="sidebar-link" href="{% url 'accounts:password_change' %}">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="4" y="10" width="16" height="11" rx="2"
+                          stroke="currentColor" stroke-width="1.7"/>
+                    <path d="M8 10V7a4 4 0 1 1 8 0v3"
+                          stroke="currentColor" stroke-width="1.7"
+                          stroke-linecap="round"/>
+                    <path d="M12 14v3" stroke="currentColor"
+                          stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+                <span>Đổi mật khẩu</span>
             </a>
-            <form method="post" action="{% url 'accounts:logout' %}">
+
+            <form method="post" action="{% url 'accounts:logout' %}" class="sidebar-logout-form">
                 {% csrf_token %}
-                <button class="nav-link" type="submit"
-                        style="width:100%;border:0;text-align:left;cursor:pointer;font:inherit;background:transparent;">
-                    Đăng xuất
+                <button class="sidebar-link sidebar-logout" type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M10 17l5-5-5-5M15 12H3"
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round"/>
+                    </svg>
+                    <span>Đăng xuất</span>
                 </button>
             </form>
         </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-help-card">
+                <div class="help-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"
+                                stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M9.6 9a2.5 2.5 0 1 1 4.2 1.8c-1.2 1-1.8 1.4-1.8 2.7"
+                              stroke="currentColor" stroke-width="1.7"
+                              stroke-linecap="round"/>
+                        <path d="M12 17h.01"
+                              stroke="currentColor" stroke-width="2.5"
+                              stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <strong>CampusFlow</strong>
+                <span>Đồng hành cùng hành trình học tập của bạn.</span>
+            </div>
+            <div class="sidebar-version">CampusFlow · Academic Platform</div>
+        </div>
     </aside>
 
-    <main class="main">
-        <header class="topbar">
-            <div class="topbar-title">
-                {% block topbar_title %}Tổng quan{% endblock %}
+    <main class="app-main">
+        <header class="app-topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-button" type="button"
+                        aria-label="Mở menu" aria-controls="appSidebar"
+                        aria-expanded="false" data-sidebar-toggle>
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16"
+                              stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round"/>
+                    </svg>
+                </button>
+
+                <div class="breadcrumb">
+                    <span>CampusFlow</span>
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="m6 3 5 5-5 5" stroke="currentColor"
+                              stroke-width="1.5" stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                    </svg>
+                    <strong>{% block topbar_title %}Tổng quan{% endblock %}</strong>
+                </div>
             </div>
-            <div class="user-info">
-                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-                {{ request.user.display_role }}
+
+            <div class="topbar-right">
+                <div class="topbar-date">
+                    <span class="topbar-date-icon">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="16" rx="2.5"
+                                  stroke="currentColor" stroke-width="1.7"/>
+                            <path d="M16 3v4M8 3v4M3 10h18"
+                                  stroke="currentColor" stroke-width="1.7"
+                                  stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span data-current-date>--/--/----</span>
+                </div>
+
+                <div class="topbar-divider"></div>
+
+                <a href="{% url 'accounts:profile' %}" class="topbar-user"
+                   aria-label="Xem hồ sơ cá nhân">
+                    <span class="topbar-avatar">
+                        {{ request.user.get_full_name|default:request.user.username|first|upper }}
+                    </span>
+                    <span class="topbar-user-copy">
+                        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                        <small>{{ request.user.display_role }}</small>
+                    </span>
+                    <svg class="topbar-chevron" viewBox="0 0 20 20" fill="none"
+                         aria-hidden="true">
+                        <path d="m6 8 4 4 4-4" stroke="currentColor"
+                              stroke-width="1.6" stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                    </svg>
+                </a>
             </div>
         </header>
 
-        <section class="content">
+        <section class="dashboard-content">
             {% if messages %}
-                {% for message in messages %}
-                    <div class="profile-warning">{{ message }}</div>
-                {% endfor %}
+                <div class="dashboard-messages" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="dashboard-message {{ message.tags|default:'info' }}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
 
             {% block content %}{% endblock %}
         </section>
 
-        <footer class="footer">
-            CampusFlow · Hệ thống quản lý học tập
+        <footer class="app-footer">
+            <span>© {% now "Y" %} CampusFlow</span>
+            <span>Nền tảng quản lý học tập thông minh</span>
         </footer>
     </main>
 </div>
 
+<script src="{% static 'js/dashboard.js' %}" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

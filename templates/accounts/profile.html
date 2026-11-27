@@ -1,132 +1,30 @@
-
-{% extends "accounts/base_auth.html" %}
-{% load static %}
+{% extends "admin_panel/base.html" %}
 {% block title %}Hồ sơ cá nhân | CampusFlow{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
-{% endblock %}
-
 {% block content %}
-
-<div class="account-container">
-
-    <header class="account-header">
-
-        <a href="{% url 'accounts:profile' %}" class="account-brand">
-            <span class="brand-icon">C</span>
-            CampusFlow
-        </a>
-
-        <form method="post" action="{% url 'accounts:logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn-logout">
-                Đăng xuất
-            </button>
-        </form>
-
-    </header>
-
-    <section class="account-content">
-
-        <div class="account-heading">
-            <div>
-                <span class="eyebrow">TÀI KHOẢN</span>
-                <h1>Hồ sơ cá nhân</h1>
-                <p>Quản lý thông tin và bảo mật tài khoản của bạn.</p>
-            </div>
-        </div>
-
-        <div class="profile-card">
-
-            <div class="profile-avatar">
-                {{ profile_user.username|slice:":1"|upper }}
-            </div>
-
-            <div class="profile-info">
-                <h2>
-                    {{ profile_user.get_full_name|default:profile_user.username }}
-                </h2>
-
-                <span class="role-badge">
-                    {{ profile_user.display_role }}
-                </span>
-
-                <p>{{ profile_user.email|default:"Chưa cập nhật email" }}</p>
-            </div>
-
-        </div>
-
-        <div class="account-card">
-
-            <div class="card-heading">
-                <div>
-                    <h2>Thông tin tài khoản</h2>
-                    <p>Thông tin cá nhân hiện tại của bạn.</p>
-                </div>
-
-                <a href="{% url 'accounts:profile_edit' %}" class="btn-secondary">
-                    Chỉnh sửa
-                </a>
-            </div>
-
-            <div class="profile-details">
-
-                <div class="detail-item">
-                    <span>Tên đăng nhập</span>
-                    <strong>{{ profile_user.username }}</strong>
-                </div>
-
-                <div class="detail-item">
-                    <span>Họ và tên đệm</span>
-                    <strong>{{ profile_user.last_name|default:"Chưa cập nhật" }}</strong>
-                </div>
-
-                <div class="detail-item">
-                    <span>Tên</span>
-                    <strong>{{ profile_user.first_name|default:"Chưa cập nhật" }}</strong>
-                </div>
-
-                <div class="detail-item">
-                    <span>Email</span>
-                    <strong>{{ profile_user.email|default:"Chưa cập nhật" }}</strong>
-                </div>
-
-                <div class="detail-item">
-                    <span>Số điện thoại</span>
-                    <strong>{{ profile_user.phone_number|default:"Chưa cập nhật" }}</strong>
-                </div>
-
-                <div class="detail-item">
-                    <span>Trạng thái</span>
-                    <strong>
-                        {% if profile_user.is_active %}
-                            Đang hoạt động
-                        {% else %}
-                            Đã khóa
-                        {% endif %}
-                    </strong>
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="account-card security-card">
-
-            <div>
-                <h2>Bảo mật tài khoản</h2>
-                <p>Thay đổi mật khẩu để bảo vệ tài khoản.</p>
-            </div>
-
-            <a href="{% url 'accounts:password_change' %}" class="btn-secondary">
-                Đổi mật khẩu
-            </a>
-
-        </div>
-
-    </section>
-
+<div class="page-heading">
+    <div><span class="eyebrow">TÀI KHOẢN</span><h1>Hồ sơ cá nhân</h1><p>Quản lý thông tin và bảo mật tài khoản quản trị.</p></div>
 </div>
-
+<section class="admin-card account-profile-hero">
+    <div class="account-profile-avatar">{{ profile_user.first_name|default:profile_user.username|first|upper }}</div>
+    <div class="account-profile-identity">
+        <h2>{{ profile_user.get_full_name|default:profile_user.username }}</h2>
+        <span class="badge badge-success">Quản trị viên</span>
+        <p>{{ profile_user.email|default:"Chưa cập nhật email" }}</p>
+    </div>
+</section>
+<section class="admin-card account-profile-card">
+    <div class="panel-heading"><div><h2>Thông tin tài khoản</h2><p>Thông tin cá nhân hiện tại của bạn.</p></div><a class="admin-button secondary" href="{% url 'accounts:profile_edit' %}">Chỉnh sửa</a></div>
+    <div class="account-detail-grid">
+        <div><span>Tên đăng nhập</span><strong>{{ profile_user.username }}</strong></div>
+        <div><span>Họ và tên đệm</span><strong>{{ profile_user.last_name|default:"Chưa cập nhật" }}</strong></div>
+        <div><span>Tên</span><strong>{{ profile_user.first_name|default:"Chưa cập nhật" }}</strong></div>
+        <div><span>Email</span><strong>{{ profile_user.email|default:"Chưa cập nhật" }}</strong></div>
+        <div><span>Số điện thoại</span><strong>{{ profile_user.phone_number|default:"Chưa cập nhật" }}</strong></div>
+        <div><span>Trạng thái</span><strong>{% if profile_user.is_active %}Đang hoạt động{% else %}Đã khóa{% endif %}</strong></div>
+    </div>
+</section>
+<section class="admin-card account-security-row">
+    <div><h2>Bảo mật tài khoản</h2><p>Thay đổi mật khẩu để bảo vệ tài khoản.</p></div>
+    <a class="admin-button secondary" href="{% url 'accounts:password_change' %}">Đổi mật khẩu</a>
+</section>
 {% endblock %}

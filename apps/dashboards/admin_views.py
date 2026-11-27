@@ -1421,32 +1421,41 @@ def admin_class_session_update(request, pk):
     obj = get_object_or_404(ClassSession, pk=pk)
     form = AdminClassSessionForm(request.POST or None, instance=obj)
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST":
+        # Phải lấy dữ liệu cũ TRƯỚC form.is_valid().
         before = {
             "timetable_id": obj.timetable_id,
             "session_date": obj.session_date.isoformat(),
             "status": obj.status,
+            "topic": obj.topic,
+            "note": obj.note,
         }
 
-        with transaction.atomic():
-            obj = form.save()
-            _audit_admin_change(
-                request,
-                "admin.class_session.updated",
-                obj,
-                f"Cập nhật buổi học {obj}.",
-                {
-                    "before": before,
-                    "after": {
-                        "timetable_id": obj.timetable_id,
-                        "session_date": obj.session_date.isoformat(),
-                        "status": obj.status,
-                    },
-                },
-            )
+        if form.is_valid():
+            with transaction.atomic():
+                updated_obj = form.save()
 
-        messages.success(request, "Đã cập nhật buổi học.")
-        return redirect("admin_panel:class_session_list")
+                after = {
+                    "timetable_id": updated_obj.timetable_id,
+                    "session_date": updated_obj.session_date.isoformat(),
+                    "status": updated_obj.status,
+                    "topic": updated_obj.topic,
+                    "note": updated_obj.note,
+                }
+
+                _audit_admin_change(
+                    request,
+                    "admin.class_session.updated",
+                    updated_obj,
+                    f"Cập nhật buổi học {updated_obj}.",
+                    {
+                        "before": before,
+                        "after": after,
+                    },
+                )
+
+            messages.success(request, "Đã cập nhật buổi học.")
+            return redirect("admin_panel:class_session_list")
 
     return render(
         request,

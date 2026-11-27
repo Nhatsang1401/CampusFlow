@@ -1,0 +1,68 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Chỉnh sửa hồ sơ | CampusFlow{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ACCOUNT MANAGEMENT</span>
+        <h1>Chỉnh sửa hồ sơ</h1>
+        <p>Cập nhật thông tin cá nhân của tài khoản quản trị.</p>
+    </div>
+</div>
+
+<section class="admin-panel form-panel">
+
+    <div class="panel-heading">
+        <div>
+            <h2>Thông tin cá nhân</h2>
+            <p>Vui lòng kiểm tra thông tin trước khi lưu.</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-grid">
+            {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+
+                    {% if field.help_text %}
+                        <span class="field-help">{{ field.help_text|safe }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'accounts:profile' %}"
+               class="admin-button secondary">
+                Hủy
+            </a>
+
+            <button type="submit" class="admin-button primary">
+                Lưu thay đổi
+            </button>
+        </div>
+    </form>
+
+</section>
+
+{% endblock %}

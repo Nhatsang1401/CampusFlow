@@ -1,104 +1,328 @@
-
 {% extends "dashboards/base_dashboard.html" %}
 
-{% block title %}Dashboard giảng viên | CampusFlow{% endblock %}
-{% block topbar_title %}Không gian giảng viên{% endblock %}
+{% block title %}Không gian giảng viên | CampusFlow{% endblock %}
+{% block topbar_title %}Tổng quan giảng viên{% endblock %}
 
 {% block content %}
+
 <div class="page-heading">
-    <h1>Xin chào, {{ request.user.get_full_name|default:request.user.username }}</h1>
-    <p>Quản lý học phần và theo dõi hoạt động giảng dạy của bạn.</p>
+    <div class="page-heading-copy">
+        <div class="page-eyebrow">LECTURER WORKSPACE</div>
+        <h1>Không gian giảng viên</h1>
+        <p>Quản lý công việc giảng dạy và theo dõi hoạt động học tập của sinh viên.</p>
+    </div>
+    <div class="heading-date" data-current-date>CampusFlow</div>
+</div>
+
+<div class="welcome-banner">
+    <div class="welcome-copy">
+        <div class="welcome-label">
+            <span></span>
+            LECTURER PORTAL
+        </div>
+        <h2>Xin chào, {{ request.user.get_full_name|default:request.user.username }}!</h2>
+        <p>
+            Chúc bạn có một ngày giảng dạy hiệu quả.
+            Theo dõi lịch dạy và tình hình lớp học ngay tại đây.
+        </p>
+    </div>
+
+    <div class="welcome-art" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none">
+            <path d="M8 19.5 32 7l24 12.5L32 32 8 19.5Z"
+                  stroke="currentColor" stroke-width="2.2"
+                  stroke-linejoin="round"/>
+            <path d="M15 24v16c10 7.5 24 7.5 34 0V24"
+                  stroke="currentColor" stroke-width="2.2"
+                  stroke-linejoin="round"/>
+            <path d="M56 20v17"
+                  stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round"/>
+            <circle cx="56" cy="40" r="2.5" fill="currentColor"/>
+        </svg>
+    </div>
 </div>
 
 {% if not has_profile %}
+
     <div class="profile-warning">
-        Tài khoản chưa được liên kết với hồ sơ giảng viên.
-        Vui lòng liên hệ quản trị viên để cập nhật thông tin.
+        <div class="profile-warning-icon">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 9v4M12 17h.01"
+                      stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round"/>
+                <path d="M10.3 3.8 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"
+                      stroke="currentColor" stroke-width="1.7"
+                      stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div>
+            <strong>Tài khoản chưa được liên kết với hồ sơ giảng viên</strong>
+            <p>Vui lòng liên hệ quản trị viên để cập nhật hồ sơ và được phân công học phần.</p>
+        </div>
     </div>
+
 {% else %}
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Học phần phụ trách</div>
-            <div class="stat-value">{{ total_sections }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Sinh viên đã đăng ký</div>
-            <div class="stat-value">{{ total_students }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Buổi học sắp diễn ra</div>
-            <div class="stat-value">{{ upcoming_session_count }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Lượt điểm danh</div>
-            <div class="stat-value">{{ total_attendance_records }}</div>
-        </div>
-    </div>
 
-    <div class="panel">
-        <h2>Lịch giảng dạy sắp tới</h2>
+    <section class="stats-grid" aria-label="Thống kê giảng dạy">
 
-        {% if upcoming_sessions %}
-            <div class="table-wrap">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Ngày học</th>
-                            <th>Học phần</th>
-                            <th>Phòng học</th>
-                            <th>Sinh viên đăng ký</th>
-                            <th>Đã điểm danh</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for session in upcoming_sessions %}
-                            <tr>
-                                <td>{{ session.session_date|date:"d/m/Y" }}</td>
-                                <td>
-                                    {{ session.timetable.course_section.course.code }}
-                                    -
-                                    {{ session.timetable.course_section.course.name }}
-                                </td>
-                                <td>{{ session.timetable.classroom.name }}</td>
-                                <td>{{ session.registered_count }}</td>
-                                <td>{{ session.attendance_count }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Học phần phụ trách</span>
+                <span class="stat-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"
+                              stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"
+                              stroke="currentColor" stroke-width="1.7"/>
+                    </svg>
+                </span>
             </div>
-        {% else %}
-            <div class="empty-state">Bạn chưa có buổi học sắp tới.</div>
-        {% endif %}
-    </div>
+            <strong class="stat-value">{{ total_sections }}</strong>
+            <span class="stat-caption">Lớp học phần đang hoạt động</span>
+        </article>
 
-    <div class="panel">
-        <h2>Học phần đang phụ trách</h2>
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Sinh viên đăng ký</span>
+                <span class="stat-icon green">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                              stroke="currentColor" stroke-width="1.7"
+                              stroke-linecap="round"/>
+                        <circle cx="10" cy="7" r="4"
+                                stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                              stroke="currentColor" stroke-width="1.7"
+                              stroke-linecap="round"/>
+                    </svg>
+                </span>
+            </div>
+            <strong class="stat-value">{{ total_students }}</strong>
+            <span class="stat-caption">Sinh viên đã đăng ký học phần</span>
+        </article>
 
-        {% if sections %}
-            <div class="table-wrap">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Mã học phần</th>
-                            <th>Tên học phần</th>
-                            <th>Học kỳ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Buổi học sắp tới</span>
+                <span class="stat-icon orange">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"
+                                stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M12 7v5l3.5 2"
+                              stroke="currentColor" stroke-width="1.7"
+                              stroke-linecap="round"/>
+                    </svg>
+                </span>
+            </div>
+            <strong class="stat-value">{{ upcoming_session_count }}</strong>
+            <span class="stat-caption">Các buổi học chưa diễn ra</span>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Lượt điểm danh</span>
+                <span class="stat-icon purple">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+                              stroke="currentColor" stroke-width="1.7"/>
+                        <rect x="8" y="3" width="8" height="4" rx="1.5"
+                              stroke="currentColor" stroke-width="1.7"/>
+                        <path d="m8 13 2.5 2.5L16 10"
+                              stroke="currentColor" stroke-width="1.7"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </div>
+            <strong class="stat-value">{{ total_attendance_records }}</strong>
+            <span class="stat-caption">Tổng lượt điểm danh đã ghi nhận</span>
+        </article>
+
+    </section>
+
+    <div class="dashboard-grid">
+
+        <div class="dashboard-column">
+
+            <section class="panel" id="schedule">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>Lịch giảng dạy sắp tới</h2>
+                        <p>Theo dõi các buổi học được phân công</p>
+                    </div>
+                    <span class="panel-count">{{ upcoming_sessions|length }} buổi</span>
+                </div>
+
+                {% if upcoming_sessions %}
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Ngày học</th>
+                                    <th>Học phần</th>
+                                    <th>Phòng học</th>
+                                    <th>Đăng ký</th>
+                                    <th>Điểm danh</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in upcoming_sessions %}
+                                    <tr>
+                                        <td>
+                                            <span class="table-primary">
+                                                {{ session.session_date|date:"d/m/Y" }}
+                                            </span>
+                                            <span class="table-secondary">
+                                                {{ session.timetable.start_time|time:"H:i" }}
+                                                – {{ session.timetable.end_time|time:"H:i" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="table-primary">
+                                                {{ session.timetable.course_section.course.name }}
+                                            </span>
+                                            <span class="table-secondary">
+                                                {{ session.timetable.course_section.course.code }}
+                                            </span>
+                                        </td>
+                                        <td>{{ session.timetable.classroom.name }}</td>
+                                        <td>{{ session.registered_count }}</td>
+                                        <td>
+                                            <span class="status-pill">
+                                                {{ session.attendance_count }} lượt
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <rect x="3" y="5" width="18" height="16" rx="2"
+                                      stroke="currentColor" stroke-width="1.7"/>
+                                <path d="M16 3v4M8 3v4M3 10h18"
+                                      stroke="currentColor" stroke-width="1.7"
+                                      stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <strong>Chưa có buổi học sắp tới</strong>
+                        <p>Các buổi học được phân công sẽ xuất hiện tại khu vực này.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="panel" id="courses">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>Học phần đang phụ trách</h2>
+                        <p>Danh sách lớp học phần của bạn</p>
+                    </div>
+                    <span class="panel-count">{{ total_sections }} học phần</span>
+                </div>
+
+                {% if sections %}
+                    <div class="course-list">
                         {% for section in sections %}
-                            <tr>
-                                <td>{{ section.code }}</td>
-                                <td>{{ section.course.name }}</td>
-                                <td>{{ section.term.name }}</td>
-                            </tr>
+                            <div class="course-item">
+                                <div class="course-mark">
+                                    {{ section.course.code|slice:":2" }}
+                                </div>
+                                <div class="course-info">
+                                    <strong>{{ section.course.name }}</strong>
+                                    <span>
+                                        {{ section.course.code }}
+                                        · {{ section.term.name }}
+                                        · Lớp {{ section.code }}
+                                    </span>
+                                </div>
+                            </div>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="empty-state">Bạn chưa được phân công học phần.</div>
-        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"
+                                      stroke="currentColor" stroke-width="1.7"/>
+                            </svg>
+                        </div>
+                        <strong>Chưa được phân công học phần</strong>
+                        <p>Thông tin học phần sẽ được cập nhật khi quản trị viên phân công.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+        </div>
+
+        <div class="dashboard-column dashboard-grid-secondary">
+
+            <section class="panel" id="activity">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>Thông tin nhanh</h2>
+                        <p>Tổng quan công việc giảng dạy</p>
+                    </div>
+                </div>
+
+                <div class="schedule-list">
+                    <div class="schedule-item">
+                        <div class="schedule-time">01</div>
+                        <div class="schedule-marker"></div>
+                        <div class="schedule-detail">
+                            <strong>Học phần phụ trách</strong>
+                            <span>{{ total_sections }} lớp học phần đang hoạt động</span>
+                        </div>
+                    </div>
+                    <div class="schedule-item">
+                        <div class="schedule-time">02</div>
+                        <div class="schedule-marker"></div>
+                        <div class="schedule-detail">
+                            <strong>Sinh viên</strong>
+                            <span>{{ total_students }} sinh viên đã đăng ký</span>
+                        </div>
+                    </div>
+                    <div class="schedule-item">
+                        <div class="schedule-time">03</div>
+                        <div class="schedule-marker"></div>
+                        <div class="schedule-detail">
+                            <strong>Điểm danh</strong>
+                            <span>{{ total_attendance_records }} lượt được ghi nhận</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <h2>Lời nhắc</h2>
+                        <p>Thông tin dành cho giảng viên</p>
+                    </div>
+                </div>
+
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+                                  stroke="currentColor" stroke-width="1.7"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M10 21h4"
+                                  stroke="currentColor" stroke-width="1.7"
+                                  stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <strong>Luôn cập nhật lịch giảng dạy</strong>
+                    <p>Kiểm tra thời khóa biểu thường xuyên để chủ động trong công việc.</p>
+                </div>
+            </section>
+
+        </div>
+
     </div>
+
 {% endif %}
+
 {% endblock %}

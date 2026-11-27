@@ -1,0 +1,101 @@
+
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Hồ sơ cá nhân | CampusFlow{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ACCOUNT MANAGEMENT</span>
+        <h1>Hồ sơ cá nhân</h1>
+        <p>Quản lý thông tin và bảo mật tài khoản quản trị của bạn.</p>
+    </div>
+    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+        Chỉnh sửa hồ sơ
+    </a>
+</div>
+
+<div class="admin-panel">
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+        <div class="admin-avatar" style="width:68px;height:68px;font-size:24px;">
+            {{ profile_user.username|slice:":1"|upper }}
+        </div>
+
+        <div>
+            <h2 style="margin:0 0 7px;">
+                {{ profile_user.get_full_name|default:profile_user.username }}
+            </h2>
+            <span class="status-badge active">Quản trị viên</span>
+            <p style="margin:8px 0 0;color:var(--admin-muted);">
+                {{ profile_user.email|default:"Chưa cập nhật email" }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Thông tin tài khoản</h2>
+            <p>Thông tin cá nhân hiện tại của bạn.</p>
+        </div>
+
+        <a href="{% url 'accounts:profile_edit' %}"
+           class="admin-button secondary">
+            Chỉnh sửa
+        </a>
+    </div>
+
+    <div class="form-grid">
+        <div class="form-field">
+            <label>Tên đăng nhập</label>
+            <strong>{{ profile_user.username }}</strong>
+        </div>
+
+        <div class="form-field">
+            <label>Họ và tên đệm</label>
+            <strong>{{ profile_user.last_name|default:"Chưa cập nhật" }}</strong>
+        </div>
+
+        <div class="form-field">
+            <label>Tên</label>
+            <strong>{{ profile_user.first_name|default:"Chưa cập nhật" }}</strong>
+        </div>
+
+        <div class="form-field">
+            <label>Email</label>
+            <strong>{{ profile_user.email|default:"Chưa cập nhật" }}</strong>
+        </div>
+
+        <div class="form-field">
+            <label>Số điện thoại</label>
+            <strong>{{ profile_user.phone_number|default:"Chưa cập nhật" }}</strong>
+        </div>
+
+        <div class="form-field">
+            <label>Trạng thái tài khoản</label>
+            {% if profile_user.is_active %}
+                <span class="status-badge active">Đang hoạt động</span>
+            {% else %}
+                <span class="status-badge inactive">Đã khóa</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Bảo mật tài khoản</h2>
+            <p>Thay đổi mật khẩu để bảo vệ tài khoản quản trị.</p>
+        </div>
+
+        <a href="{% url 'accounts:password_change' %}"
+           class="admin-button primary">
+            Đổi mật khẩu
+        </a>
+    </div>
+</div>
+
+{% endblock %}

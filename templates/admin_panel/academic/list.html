@@ -32,6 +32,7 @@
             >
         </div>
 
+        {# KHOA: LỚP HÀNH CHÍNH, SINH VIÊN, GIẢNG VIÊN #}
         {% if list_type == "class" or list_type == "student" or list_type == "lecturer" %}
             <div class="filter-field">
                 <label for="facultyFilter">Khoa</label>
@@ -49,6 +50,7 @@
             </div>
         {% endif %}
 
+        {# LỌC LỚP HÀNH CHÍNH CỦA SINH VIÊN #}
         {% if list_type == "student" %}
             <div class="filter-field">
                 <label for="classFilter">Lớp hành chính</label>
@@ -66,11 +68,12 @@
             </div>
         {% endif %}
 
-        {% if list_type == "classroom" or list_type == "timetable" %}
+        {# TRẠNG THÁI CHUNG #}
+        {% if list_type == "classroom" or list_type == "timetable" or list_type == "faculty" or list_type == "class" or list_type == "term" or list_type == "course" %}
             <div class="filter-field">
                 <label for="activeFilter">Trạng thái</label>
                 <select id="activeFilter" name="active">
-                    <option value="">Tất cả</option>
+                    <option value="">Tất cả trạng thái</option>
                     <option value="active" {% if selected_active == "active" %}selected{% endif %}>
                         Đang hoạt động
                     </option>
@@ -81,53 +84,200 @@
             </div>
         {% endif %}
 
-        {% if list_type == "faculty" or list_type == "class" or list_type == "term" or list_type == "course" %}
+        {# BỘ LỌC PHÒNG HỌC #}
+        {% if list_type == "classroom" %}
             <div class="filter-field">
-                <label for="activeFilter">Trạng thái</label>
-                <select id="activeFilter" name="active">
-                    <option value="">Tất cả</option>
-                    <option value="active" {% if selected_active == "active" %}selected{% endif %}>
-                        Đang hoạt động
-                    </option>
-                    <option value="inactive" {% if selected_active == "inactive" %}selected{% endif %}>
-                        Ngừng hoạt động
-                    </option>
+                <label for="buildingFilter">Tòa nhà</label>
+                <input
+                    type="text"
+                    id="buildingFilter"
+                    name="building"
+                    value="{{ selected_building|default:'' }}"
+                    placeholder="Nhập tên tòa nhà"
+                >
+            </div>
+
+            <div class="filter-field">
+                <label for="classroomTypeFilter">Loại phòng</label>
+                <select id="classroomTypeFilter" name="type">
+                    <option value="">Tất cả loại phòng</option>
+                    {% for value, label in classroom_types %}
+                        <option
+                            value="{{ value }}"
+                            {% if selected_type == value %}selected{% endif %}
+                        >
+                            {{ label }}
+                        </option>
+                    {% endfor %}
                 </select>
+            </div>
+        {% endif %}
+
+        {# BỘ LỌC THỜI KHÓA BIỂU #}
+        {% if list_type == "timetable" %}
+            <div class="filter-field">
+                <label for="termFilter">Học kỳ</label>
+                <select id="termFilter" name="term">
+                    <option value="">Tất cả học kỳ</option>
+                    {% for term in terms %}
+                        <option
+                            value="{{ term.pk }}"
+                            {% if selected_term == term.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ term.name }} ({{ term.academic_year }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="sectionFilter">Lớp học phần</label>
+                <select id="sectionFilter" name="section">
+                    <option value="">Tất cả lớp học phần</option>
+                    {% for section in sections %}
+                        <option
+                            value="{{ section.pk }}"
+                            {% if selected_section == section.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ section.code }} - {{ section.course.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="timetableClassroomFilter">Phòng học</label>
+                <select id="timetableClassroomFilter" name="classroom">
+                    <option value="">Tất cả phòng học</option>
+                    {% for classroom in classrooms %}
+                        <option
+                            value="{{ classroom.pk }}"
+                            {% if selected_classroom == classroom.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ classroom.code }} - {{ classroom.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="weekdayFilter">Thứ</label>
+                <select id="weekdayFilter" name="weekday">
+                    <option value="">Tất cả các thứ</option>
+                    {% for value, label in weekdays %}
+                        <option
+                            value="{{ value }}"
+                            {% if selected_weekday == value|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        {# BỘ LỌC BUỔI HỌC #}
+        {% if list_type == "class_session" %}
+            <div class="filter-field">
+                <label for="sessionTermFilter">Học kỳ</label>
+                <select id="sessionTermFilter" name="term">
+                    <option value="">Tất cả học kỳ</option>
+                    {% for term in terms %}
+                        <option
+                            value="{{ term.pk }}"
+                            {% if selected_term == term.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ term.name }} ({{ term.academic_year }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="timetableFilter">Thời khóa biểu</label>
+                <select id="timetableFilter" name="timetable">
+                    <option value="">Tất cả thời khóa biểu</option>
+                    {% for timetable in timetables %}
+                        <option
+                            value="{{ timetable.pk }}"
+                            {% if selected_timetable == timetable.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ timetable.course_section.code }}
+                            - {{ timetable.get_weekday_display }}
+                            ({{ timetable.start_time|time:"H:i" }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="sessionClassroomFilter">Phòng học</label>
+                <select id="sessionClassroomFilter" name="classroom">
+                    <option value="">Tất cả phòng học</option>
+                    {% for classroom in classrooms %}
+                        <option
+                            value="{{ classroom.pk }}"
+                            {% if selected_classroom == classroom.pk|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ classroom.code }} - {{ classroom.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="sessionStatusFilter">Trạng thái buổi học</label>
+                <select id="sessionStatusFilter" name="status">
+                    <option value="">Tất cả trạng thái</option>
+                    {% for value, label in session_statuses %}
+                        <option
+                            value="{{ value }}"
+                            {% if selected_status == value %}selected{% endif %}
+                        >
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="dateFromFilter">Từ ngày</label>
+                <input
+                    type="date"
+                    id="dateFromFilter"
+                    name="date_from"
+                    value="{{ date_from|default:'' }}"
+                >
+            </div>
+
+            <div class="filter-field">
+                <label for="dateToFilter">Đến ngày</label>
+                <input
+                    type="date"
+                    id="dateToFilter"
+                    name="date_to"
+                    value="{{ date_to|default:'' }}"
+                >
             </div>
         {% endif %}
 
         <div class="filter-actions">
-            <button type="submit" class="btn btn-primary">Lọc dữ liệu</button>
-            <a href="{% url request.resolver_match.view_name %}" class="btn btn-secondary">
-                Xóa lọc
+            <button type="submit" class="btn admin-button primary">
+                Lọc dữ liệu
+            </button>
+            <a href="{% url request.resolver_match.view_name %}" class="btn admin-button secondary">
+                Xóa bộ lọc
             </a>
         </div>
     </form>
 </section>
 
 <section class="admin-card">
-    <div class="admin-card-header">
-        <div>
-            <h2>Danh sách dữ liệu</h2>
-            <p>
-                {% if page_obj.paginator.count %}
-                    Tìm thấy {{ page_obj.paginator.count }} kết quả
-                {% else %}
-                    Chưa có dữ liệu
-                {% endif %}
-            </p>
-        </div>
-
-        <span class="admin-result-count">
-            {{ page_obj.paginator.count }} bản ghi
-        </span>
-    </div>
-
     <div class="admin-table-wrapper">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th style="width: 64px;">STT</th>
+                    <th>#</th>
 
                     {% if list_type == "faculty" %}
                         <th>Mã khoa</th>
@@ -203,23 +353,21 @@
             <tbody>
                 {% for item in page_obj %}
                     <tr>
-                        <td>
-                            {{ page_obj.start_index|add:forloop.counter0 }}
-                        </td>
+                        <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
 
                         {% if list_type == "faculty" %}
                             <td><strong>{{ item.code }}</strong></td>
                             <td>{{ item.name }}</td>
                             <td>
                                 {% if item.is_active %}
-                                    <span class="status-badge status-active">Hoạt động</span>
+                                    <span class="status-badge active">Hoạt động</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                    <span class="status-badge inactive">Ngừng hoạt động</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right">
+                            <td>
                                 <div class="table-actions">
-                                    <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                         Chỉnh sửa
                                     </a>
                                     <form
@@ -229,7 +377,7 @@
                                         onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái khoa này?');"
                                     >
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                        <button type="submit" class="btn admin-button secondary">
                                             {% if item.is_active %}Ngừng hoạt động{% else %}Kích hoạt{% endif %}
                                         </button>
                                     </form>
@@ -241,14 +389,14 @@
                             <td>{{ item.faculty.code }} - {{ item.faculty.name }}</td>
                             <td>
                                 {% if item.is_active %}
-                                    <span class="status-badge status-active">Hoạt động</span>
+                                    <span class="status-badge active">Hoạt động</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                    <span class="status-badge inactive">Ngừng hoạt động</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right">
+                            <td>
                                 <div class="table-actions">
-                                    <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                                    <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                         Chỉnh sửa
                                     </a>
                                     <form
@@ -258,7 +406,7 @@
                                         onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái lớp này?');"
                                     >
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                        <button type="submit" class="btn admin-button secondary">
                                             {% if item.is_active %}Ngừng hoạt động{% else %}Kích hoạt{% endif %}
                                         </button>
                                     </form>
@@ -273,8 +421,8 @@
                             </td>
                             <td>{{ item.academic_class.code|default:"Chưa phân lớp" }}</td>
                             <td>{{ item.academic_class.faculty.name|default:"—" }}</td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                            <td>
+                                <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                     Chỉnh sửa
                                 </a>
                             </td>
@@ -286,8 +434,8 @@
                                 <small class="table-subtext">{{ item.user.email }}</small>
                             </td>
                             <td>{{ item.faculty.name }}</td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                            <td>
+                                <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                     Chỉnh sửa
                                 </a>
                             </td>
@@ -296,29 +444,20 @@
                             <td><strong>{{ item.code }}</strong></td>
                             <td>{{ item.name }}</td>
                             <td>{{ item.academic_year }}</td>
-                            <td>
-                                {% if item.semester == "1" %}
-                                    Học kỳ 1
-                                {% elif item.semester == "2" %}
-                                    Học kỳ 2
-                                {% else %}
-                                    Học kỳ hè
-                                {% endif %}
-                            </td>
+                            <td>{{ item.get_semester_display }}</td>
                             <td>
                                 {{ item.start_date|date:"d/m/Y" }}
-                                –
-                                {{ item.end_date|date:"d/m/Y" }}
+                                – {{ item.end_date|date:"d/m/Y" }}
                             </td>
                             <td>
                                 {% if item.is_active %}
-                                    <span class="status-badge status-active">Hoạt động</span>
+                                    <span class="status-badge active">Hoạt động</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                    <span class="status-badge inactive">Ngừng hoạt động</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                            <td>
+                                <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                     Chỉnh sửa
                                 </a>
                             </td>
@@ -329,13 +468,13 @@
                             <td>{{ item.credits }} tín chỉ</td>
                             <td>
                                 {% if item.is_active %}
-                                    <span class="status-badge status-active">Hoạt động</span>
+                                    <span class="status-badge active">Hoạt động</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                    <span class="status-badge inactive">Ngừng hoạt động</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                            <td>
+                                <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                     Chỉnh sửa
                                 </a>
                             </td>
@@ -343,20 +482,39 @@
                         {% elif list_type == "classroom" %}
                             <td><strong>{{ item.code }}</strong></td>
                             <td>{{ item.name }}</td>
-                            <td>{{ item.building|default:"—" }}</td>
+                            <td>
+                                {{ item.building|default:"—" }}
+                                · Tầng {{ item.floor }}
+                            </td>
                             <td>{{ item.capacity }} người</td>
                             <td>{{ item.get_classroom_type_display }}</td>
                             <td>
                                 {% if item.is_active %}
-                                    <span class="status-badge status-active">Hoạt động</span>
+                                    <span class="status-badge active">Hoạt động</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                    <span class="status-badge inactive">Ngừng hoạt động</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
-                                    Chỉnh sửa
-                                </a>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
+                                        Chỉnh sửa
+                                    </a>
+                                    <form
+                                        method="post"
+                                        action="{% url 'admin_panel:classroom_toggle_active' item.pk %}"
+                                        class="inline-form"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái phòng học này?');"
+                                    >
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            class="btn admin-button {% if item.is_active %}danger{% else %}secondary{% endif %}"
+                                        >
+                                            {% if item.is_active %}Ngừng hoạt động{% else %}Kích hoạt{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
 
                         {% elif list_type == "timetable" %}
@@ -372,23 +530,21 @@
                             <td>{{ item.get_weekday_display }}</td>
                             <td>
                                 {{ item.start_time|time:"H:i" }}
-                                –
-                                {{ item.end_time|time:"H:i" }}
+                                – {{ item.end_time|time:"H:i" }}
                             </td>
                             <td>
                                 {{ item.effective_start|date:"d/m/Y" }}
-                                –
-                                {{ item.effective_end|date:"d/m/Y" }}
+                                – {{ item.effective_end|date:"d/m/Y" }}
                             </td>
                             <td>
                                 {% if item.is_active %}
-                                    <span class="status-badge status-active">Hoạt động</span>
+                                    <span class="status-badge active">Hoạt động</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">Ngừng hoạt động</span>
+                                    <span class="status-badge inactive">Ngừng hoạt động</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                            <td>
+                                <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                     Chỉnh sửa
                                 </a>
                             </td>
@@ -406,24 +562,22 @@
                             <td>{{ item.session_date|date:"d/m/Y" }}</td>
                             <td>
                                 {{ item.timetable.start_time|time:"H:i" }}
-                                –
-                                {{ item.timetable.end_time|time:"H:i" }}
+                                – {{ item.timetable.end_time|time:"H:i" }}
                             </td>
                             <td>{{ item.topic|default:"—" }}</td>
                             <td>
-                                {{ item.get_status_display }}
+                                <span class="status-badge">{{ item.get_status_display }}</span>
                             </td>
-                            <td class="text-right">
-                                <a href="{% url edit_url item.pk %}" class="btn btn-sm btn-secondary">
+                            <td>
+                                <a href="{% url edit_url item.pk %}" class="btn admin-button secondary">
                                     Chỉnh sửa
                                 </a>
                             </td>
                         {% endif %}
                     </tr>
-
                 {% empty %}
                     <tr>
-                        <td colspan="10" class="empty-table">
+                        <td colspan="10">
                             <div class="empty-state">
                                 <strong>Không tìm thấy dữ liệu</strong>
                                 <p>Thử thay đổi từ khóa hoặc điều kiện lọc.</p>
@@ -438,7 +592,9 @@
     {% if page_obj.paginator.num_pages > 1 %}
         <nav class="admin-pagination" aria-label="Phân trang">
             <div class="pagination-info">
-                Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                Hiển thị {{ page_obj.start_index }}–{{ page_obj.end_index }}
+                trong {{ page_obj.paginator.count }} bản ghi
+                · Trang {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
             </div>
 
             <div class="pagination-actions">

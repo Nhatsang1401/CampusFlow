@@ -1,84 +1,22 @@
-
-{% extends "accounts/base_auth.html" %}
-
-{% load static %}
-
+{% extends "admin_panel/base.html" %}
 {% block title %}Chỉnh sửa hồ sơ | CampusFlow{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
-{% endblock %}
-
 {% block content %}
-
-<div class="account-container">
-
-    <header class="account-header">
-        <a href="{% url 'accounts:profile' %}" class="account-brand">
-            <span class="brand-icon">C</span>
-            CampusFlow
-        </a>
-        <a href="{% url 'accounts:profile' %}" class="btn-secondary">
-            Quay lại
-        </a>
-    </header>
-
-    <section class="account-content">
-
-        <div class="account-heading">
-            <span class="eyebrow">TÀI KHOẢN</span>
-            <h1>Chỉnh sửa hồ sơ</h1>
-            <p>Cập nhật thông tin cá nhân của bạn.</p>
+<div class="page-heading"><div><span class="eyebrow">TÀI KHOẢN</span><h1>Chỉnh sửa hồ sơ</h1><p>Cập nhật thông tin cá nhân của bạn.</p></div><a class="admin-button secondary" href="{% url 'accounts:profile' %}">← Quay lại</a></div>
+<section class="admin-card form-panel">
+    <form method="post" class="account-admin-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="form-grid">
+        {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="field-help">{{ field.help_text|safe }}</small>{% endif %}
+                {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+            </div>
+        {% endfor %}
         </div>
-
-        <div class="account-card">
-
-            <form method="post" class="account-form">
-
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    <div class="form-error">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                {% for field in form %}
-
-                    <div class="form-group">
-
-                        <label for="{{ field.id_for_label }}">
-                            {{ field.label }}
-                        </label>
-
-                        {{ field }}
-
-                        {% for error in field.errors %}
-                            <small class="field-error">{{ error }}</small>
-                        {% endfor %}
-
-                    </div>
-
-                {% endfor %}
-
-                <div class="form-actions">
-
-                    <a href="{% url 'accounts:profile' %}" class="btn-secondary">
-                        Hủy
-                    </a>
-
-                    <button type="submit" class="btn-primary">
-                        Lưu thay đổi
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </section>
-
-</div>
-
+        <div class="form-actions"><a class="admin-button secondary" href="{% url 'accounts:profile' %}">Hủy</a><button class="admin-button primary" type="submit">Lưu thay đổi</button></div>
+    </form>
+</section>
 {% endblock %}

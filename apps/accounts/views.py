@@ -38,12 +38,14 @@ class CampusFlowLogoutView(LogoutView):
 def profile_view(request):
     """Display the current user's profile."""
 
+    template_name = (
+        "accounts/admin/profile.html" if request.user.is_superuser else "accounts/profile.html"
+    )
+
     return render(
         request,
-        "accounts/profile.html",
-        {
-            "profile_user": request.user,
-        },
+        template_name,
+        {"profile_user": request.user},
     )
 
 
@@ -77,12 +79,16 @@ def profile_update_view(request):
             instance=request.user,
         )
 
+    template_name = (
+        "accounts/admin/profile_edit.html"
+        if request.user.is_superuser
+        else "accounts/profile_edit.html"
+    )
+
     return render(
         request,
-        "accounts/profile_edit.html",
-        {
-            "form": form,
-        },
+        template_name,
+        {"form": form},
     )
 
 
@@ -108,8 +114,18 @@ class CampusFlowPasswordChangeView(PasswordChangeView):
 
         return response
 
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["accounts/admin/password_change.html"]
+        return [self.template_name]
+
 
 class CampusFlowPasswordChangeDoneView(PasswordChangeDoneView):
     """Display successful password change."""
 
     template_name = "accounts/password_change_done.html"
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["accounts/admin/password_change_done.html"]
+        return [self.template_name]

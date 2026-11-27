@@ -1,16 +1,23 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <meta name="theme-color" content="#14233f">
     <meta name="description" content="CampusFlow Administration - Hệ thống quản lý đào tạo">
 
     <title>{% block title %}Quản trị | CampusFlow{% endblock %}</title>
 
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/admin_ui_patch.css' %}?v=1">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -23,7 +30,6 @@
             <span class="brand-name">CampusFlow</span>
         </a>
 
-        <!-- Tổng quan -->
         <div class="sidebar-caption">TỔNG QUAN</div>
 
         <a
@@ -42,7 +48,6 @@
             Dashboard thống kê
         </a>
 
-        <!-- Quản lý hệ thống -->
         <div class="sidebar-caption">QUẢN LÝ HỆ THỐNG</div>
 
         <a
@@ -69,7 +74,6 @@
             Đăng ký học phần
         </a>
 
-        <!-- Quản lý đào tạo -->
         <div class="sidebar-caption">QUẢN LÝ ĐÀO TẠO</div>
 
         <a
@@ -119,11 +123,12 @@
             <span aria-hidden="true">▧</span>
             Học phần
         </a>
+
         <a
             class="sidebar-link {% if 'classroom_' in request.resolver_match.url_name %}active{% endif %}"
             href="{% url 'admin_panel:classroom_list' %}"
         >
-            <span>▦</span>
+            <span aria-hidden="true">▦</span>
             Phòng học
         </a>
 
@@ -131,7 +136,7 @@
             class="sidebar-link {% if 'timetable_' in request.resolver_match.url_name %}active{% endif %}"
             href="{% url 'admin_panel:timetable_list' %}"
         >
-            <span>◷</span>
+            <span aria-hidden="true">◷</span>
             Thời khóa biểu
         </a>
 
@@ -139,23 +144,21 @@
             class="sidebar-link {% if 'class_session_' in request.resolver_match.url_name %}active{% endif %}"
             href="{% url 'admin_panel:class_session_list' %}"
         >
-            <span>▣</span>
+            <span aria-hidden="true">▣</span>
             Buổi học
         </a>
 
-        <!-- Tài khoản quản trị -->
         <div class="sidebar-caption">HỆ THỐNG</div>
+
         <a
             class="sidebar-link {% if 'audit_log_' in request.resolver_match.url_name %}active{% endif %}"
             href="{% url 'admin_panel:audit_log_list' %}"
         >
-            <span>◉</span>
+            <span aria-hidden="true">◉</span>
             Nhật ký hệ thống
         </a>
-        <a
-            class="sidebar-link"
-            href="{% url 'accounts:profile' %}"
-        >
+
+        <a class="sidebar-link" href="{% url 'accounts:profile' %}">
             <span aria-hidden="true">◎</span>
             Hồ sơ cá nhân
         </a>
@@ -192,7 +195,7 @@
                 id="sidebarToggle"
                 aria-label="Mở hoặc đóng menu"
                 aria-controls="adminSidebar"
-                aria-expanded="true"
+                aria-expanded="false"
             >
                 ☰
             </button>
